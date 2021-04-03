@@ -5,9 +5,12 @@ from src.sections.hr import HR
 from src.sections.user import User
 
 from src.staff.updates import Updater
+from src.staff import utils
 
 import configparser
 from telebot import TeleBot, logger
+
+
 
 config = configparser.ConfigParser()
 config.read('Settings.ini')
@@ -18,9 +21,9 @@ CONNECTION_STRING = config['Mongo']['db']
 bot = TeleBot(API_TOKEN, parse_mode="HTML")
 data = Data(conn_string=CONNECTION_STRING, bot=bot)
 
-admin = Admin(data=data)
-hr = HR(data=data)
-user = User(data=data)
+admin_section = Admin(data=data)
+hr_section = HR(data=data)
+user_section = User(data=data)
 
 updater = Updater()
 
@@ -28,40 +31,39 @@ updater = Updater()
 
 @bot.message_handler(commands=['start'])
 def start_bot(message):
-    chat_id = message.chat.id
-    username = message.chat.username if message.chat.username is not None else "Безіменний"
-    name = message.chat.first_name if message.chat.first_name is not None else "Безіменний"
-    surname = message.chat.last_name if message.chat.last_name is not None else "0"
-    
-    data.add_user(chat_id=chat_id, name=name, surname=surname, username=username)
+    user = updater.update_user_interaction_time(message)
+
+    # If in Job Fair mode
+    if False:
+        pass
+
+    # If user is HR
+    elif user.hr_status is True:
+        hr_section.send_start_menu()
+
+    # If user is basic user
+    else:
+        user_section.send_start_menu()
 
 
-
-@bot.callback_query_handler(func=lambda call: "User" == call.data.split(";")[0])
-def handle_user_query(call):
+@bot.callback_query_handler(func=lambda call: True)
+def handle_callback_query(call):
+    user = updater.update_user_interaction_time(call.message)
+    section = call.data.split(";")[0]
     
     try:
-        user.process_callback(call=call)
+        if section == "User":
+            user_section.process_callback(call=call, user=user)
+
+        elif section == "HR":
+            hr_section.process_callback(call=call, user=user)
+
+        elif section == "Admin":
+            admin_section.process_callback(call=call, user=user)
+
     except:
         pass
 
-@bot.callback_query_handler(func=lambda call: "HR" == call.data.split(";")[0])
-def handle_hr_query(call):
-    
-    try:
-        hr.process_callback(call=call)
-    except:
-        pass
-
-@bot.callback_query_handler(func=lambda call: "Admin" == call.data.split(";")[0])
-def handle_admin_query(call):
-    
-    try:
-        admin.process_callback(call=call)
-    except:
-        pass
-
-    
 
 if __name__ == "__main__":
     bot.polling(none_stop=True)

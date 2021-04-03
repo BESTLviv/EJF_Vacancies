@@ -1,5 +1,9 @@
-from ..data import Data
 from telebot.types import InlineKeyboardButton
+
+from ..data import (
+    Data,
+    User
+)
 
 
 class Section:
@@ -8,7 +12,7 @@ class Section:
         self.data = data
         self.bot = data.bot
 
-    def process_callback(self, call):
+    def process_callback(self, call, user: User):
         pass
 
     ################
@@ -33,7 +37,7 @@ class Section:
         return InlineKeyboardButton(text="❌", callback_data="DELETE")
 
     def create_back_button(self, callback_data):
-        text = self.data.message.button_back
+        text = "Назад"
         return InlineKeyboardButton(text=text, callback_data=callback_data)
 
 

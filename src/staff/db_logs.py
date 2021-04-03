@@ -10,3 +10,8 @@ def log_vacancy_apply():
 
 def log_vacancy_promotion():
     pass
+
+
+#from telebot.util import generate_random_token
+#
+#print(generate_random_token())

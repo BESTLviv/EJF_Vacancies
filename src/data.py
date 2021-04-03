@@ -42,9 +42,9 @@ class User(me.Document):
     employment = me.StringField(default="") #
     cv = me.ReferenceField(CV, default=None)
     apply_counter = me.IntField(default=20) #
-    registration_date = me.DateField(required=True) #
-    last_update_date = me.DateField(required=True)
-    last_interaction_date = me.DateField(required=True)
+    registration_date = me.DateTimeField(required=True) #
+    last_update_date = me.DateTimeField(required=True)
+    last_interaction_date = me.DateTimeField(required=True)
     hr_status = me.BooleanField(default=False)
 
 
@@ -55,7 +55,7 @@ class Company(me.Document):
     vacancy_counter = me.IntField(default=20)                 ##############?
     HR = me.ReferenceField(User, required=False)
     token = me.StringField(required=True)
-    registration_date = me.DateField(required=True)
+    registration_date = me.DateTimeField(required=True)
     #vacancy_list = me.ListField(me.EmbeddedDocumentField, Vacancy, required=False)
 
 

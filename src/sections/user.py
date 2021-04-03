@@ -1,4 +1,9 @@
-from ..data import Data
+from telebot.types import CallbackQuery
+
+from ..data import (
+    Data,
+    User
+)
 from ..objects.quiz import Quiz
 from .section import Section
 
@@ -9,10 +14,14 @@ class User(Section):
     def __init__(self, data: Data):
         super().__init__(data=data)
         
-    def process_callback(self, call):
-        pass
+    def process_callback(self, call: CallbackQuery, user: User):
+        action = call.data.split(";")[1]
 
     def process_text(self, text):
+        pass
+
+
+    def send_start_menu(self):
         pass
 
 
