@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+.vscode
+DataBase.txt
+run.bat
+cv.pdf
+Settings.ini
