@@ -110,107 +110,108 @@ class VacancyPromotionLog(me.Document):
     auditory_tag = me.StringField(required=True)
     log_datetime = me.DateField(required=True)
 
-from datetime import datetime
-
-if __name__ == '__main__':
-    #table1 = User().save()  # insert new user in table
-
-    me.connect(host="mongodb+srv://HYaroslav:4486@ejfcluster.jdquq.mongodb.net/ejf_vacancy_bot?retryWrites=true&w=majority")
-
-    now = datetime.now()
-
-    user = User()
-    user.chat_id = 12312
-    user.name = "Yaroslav"
-    user.surname = "Horodyskyi"
-    user.username = "@Yaroslav_Horodyskyi"
-    user.registration_date = now
-    user.last_update_date = now
-    user.last_interaction_date = now
-    try:
-        user.save()
-    except:
-        pass
-
-    company = Company()
-    company.name = "SoftServe"
-    company.photo_id = "afadfasdf"
-    company.description = "hahaaahahha"
-    company.token = "afafe13f23f3"
-    company.registration_date = now
-    try:
-        company.save()
-    except:
-        pass
-
-    vacancy = Vacancy()
-    vacancy.company = Company.objects.filter(name="SoftServe")[0]
-    vacancy.name = "Strong Middle Python developer"
-    vacancy.tag = "python"
-    vacancy.salary = "1000-2000$"
-    vacancy.experience = "10 років"
-    vacancy.employment_type = "Full Time"
-    vacancy.description = """Requirements:
-
-4+ years of experience in Python development;Experience in Django, Postgre, SQL,;Build REST API for Database CRUD Operations;Understanding Python deployment flow (django, wsgi, nginx, heroku etc.);Experience with Linux, bash scripting;Experience with CI/CD pipelines and devops practices for Python developments;Ability unit/integration tests.Experience with Swagger and Git Hub
-
-Duties:
-
-Development of projects from scratch
-Development of project modules.
-Writing an API.
-Supporting of ready projects
-Terms:
-
-Basic communication in Telegram (you need to be in touch with some of our distant workers).
-Working in a team of programmers.
-Using Trello task manager
-Git Hub
-Additional info:
-
-Please be ready to do testing task before the interview"""
-    vacancy.add_date = now
-    vacancy.last_update_date = now
-    #vacancy.save()
-    try:
-        pass
-        #vacancy.save()
-    except:
-        pass
-
-    #cv = CV()
-    #cv.cv_file = open("cv.pdf", "rb")
-    #cv.add_date = now
-    #cv.last_update_date = now
-    #cv.save()
+#from datetime import datetime
 #
-    #user = User.objects.with_id("605fae402abdd4962ae12c20")
+#if __name__ == '__main__':
+#    #table1 = User().save()  # insert new user in table
 #
-    #user.cv = cv
-    #user.save()
-
-
-    log = VacancyApplyLog()
-    log.vacancy = Vacancy.objects.with_id("605fbd8a7e6e123aa296f234")
-    log.user = User.objects.with_id("605fae402abdd4962ae12c20")
-    log.cv = CV.objects.with_id("605fbee7d2484091d578464f")
-    log.log_datetime = now
-    log.save()
-
-
-
-
-
-
-    #for u in User.objects:
-    #    print(len(str(u.id)))
-
-
-    #vac1 = Vacancy()
-    #vac2 = Vacancy()
-    #vacancies = [vac1, vac2]
-    #table2 = Company(name='Salam', photo_id='1', description='fff', vacancy_counter='5', HR_chat_id='1',
-    #                 token='urhfhsf1', registration_date='2012-02-02', vacancy_list=vacancies).save()
-    #table4 = VacancyPreviewLog().save()
-    #table5 = VacancyApplyLog().save()
-    #table6 = VacancyPromotionLog().save()
+#    me.connect(host="mongodb+srv://HYaroslav:4486@ejfcluster.jdquq.mongodb.net/ejf_vacancy_bot?retryWrites=true&w=majority")
+#
+#    now = datetime.now()
+#
+#    user = User()
+#    user.chat_id = 12312
+#    user.name = "Yaroslav"
+#    user.surname = "Horodyskyi"
+#    user.username = "@Yaroslav_Horodyskyi"
+#    user.registration_date = now
+#    user.last_update_date = now
+#    user.last_interaction_date = now
+#    try:
+#        user.save()
+#    except:
+#        pass
+#
+#    company = Company()
+#    company.name = "SoftServe"
+#    company.photo_id = "afadfasdf"
+#    company.description = "hahaaahahha"
+#    company.token = "afafe13f23f3"
+#    company.registration_date = now
+#    try:
+#        company.save()
+#    except:
+#        pass
+#
+#    vacancy = Vacancy()
+#    vacancy.company = Company.objects.filter(name="SoftServe")[0]
+#    vacancy.name = "Strong Middle Python developer"
+#    vacancy.tag = "python"
+#    vacancy.salary = "1000-2000$"
+#    vacancy.experience = "10 років"
+#    vacancy.employment_type = "Full Time"
+#    vacancy.description = """Requirements:
+#
+#4+ years of experience in Python development;Experience in Django, Postgre, SQL,;Build REST API for Database CRUD Operations;Understanding Python deployment flow (django, wsgi, nginx, heroku etc.);Experience with Linux, bash scripting;Experience with CI/CD pipelines and devops practices for Python developments;Ability unit/integration tests.Experience with Swagger and Git Hub
+#
+#Duties:
+#
+#Development of projects from scratch
+#Development of project modules.
+#Writing an API.
+#Supporting of ready projects
+#Terms:
+#
+#Basic communication in Telegram (you need to be in touch with some of our distant workers).
+#Working in a team of programmers.
+#Using Trello task manager
+#Git Hub
+#Additional info:
+#
+#Please be ready to do testing task before the interview"""
+#    vacancy.add_date = now
+#    vacancy.last_update_date = now
+#    #vacancy.save()
+#    try:
+#        pass
+#        #vacancy.save()
+#    except:
+#        pass
+#
+#    #cv = CV()
+#    #cv.cv_file = open("cv.pdf", "rb")
+#    #cv.add_date = now
+#    #cv.last_update_date = now
+#    #cv.save()
+##
+#    #user = User.objects.with_id("605fae402abdd4962ae12c20")
+##
+#    #user.cv = cv
+#    #user.save()
+#
+#
+#    log = VacancyApplyLog()
+#    log.vacancy = Vacancy.objects.with_id("605fbd8a7e6e123aa296f234")
+#    log.user = User.objects.with_id("605fae402abdd4962ae12c20")
+#    log.cv = CV.objects.with_id("605fbee7d2484091d578464f")
+#    log.log_datetime = now
+#    log.save()
+#
+#
+#
+#
+#
+#
+#    #for u in User.objects:
+#    #    print(len(str(u.id)))
+#
+#
+#    #vac1 = Vacancy()
+#    #vac2 = Vacancy()
+#    #vacancies = [vac1, vac2]
+#    #table2 = Company(name='Salam', photo_id='1', description='fff', vacancy_counter='5', HR_chat_id='1',
+#    #                 token='urhfhsf1', registration_date='2012-02-02', vacancy_list=vacancies).save()
+#    #table4 = VacancyPreviewLog().save()
+#    #table5 = VacancyApplyLog().save()
+#    #table6 = VacancyPromotionLog().save()
+#
