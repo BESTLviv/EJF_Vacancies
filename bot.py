@@ -3,6 +3,7 @@ from src.data import Data
 from src.sections.admin import Admin
 from src.sections.hr import HR
 from src.sections.user import User
+from src.sections.job_fair import JobFair
 
 from src.staff.updates import Updater
 from src.staff import utils
@@ -24,6 +25,7 @@ data = Data(conn_string=CONNECTION_STRING, bot=bot)
 admin_section = Admin(data=data)
 hr_section = HR(data=data)
 user_section = User(data=data)
+job_fair_section = JobFair()
 
 updater = Updater()
 
@@ -61,6 +63,20 @@ def handle_callback_query(call):
         elif section == "Admin":
             admin_section.process_callback(call=call, user=user)
 
+    except:
+        pass
+
+@bot.message_handler(content_types=['text'])
+def handle_text_buttons(message):
+    user = updater.update_user_interaction_time(message)
+    message_text = message.text
+    
+    try:
+        if message_text in user_section.TEXT_BUTTONS:
+            user_section.process_text(message_text, user)
+        
+        elif message_text in job_fair_section.TEXT_BUTTONS:
+            job_fair_section.process_text(message_text, user)
     except:
         pass
 

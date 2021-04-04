@@ -15,18 +15,21 @@ class Section:
     def process_callback(self, call, user: User):
         pass
 
+    def process_text(self, call, user: User):
+        pass
+
     ################
     # Form Callbacks
     ################
 
-    def form_admin_callback(self, action, prev_msg_action=None):
-        return f"Admin;{action};{prev_msg_action}"
+    def form_admin_callback(self, action, user_id="", company_id="", vacancy_id="", prev_msg_action=None):
+        return f"Admin;{action};{user_id};{company_id};{vacancy_id};{prev_msg_action}"
 
-    def form_hr_callback(self, action, prev_msg_action=None):
-        return f"HR;{action};{prev_msg_action}"
+    def form_hr_callback(self, action, user_id="", company_id="", vacancy_id="", prev_msg_action=None):
+        return f"HR;{action};{user_id};{company_id};{vacancy_id};{prev_msg_action}"
 
-    def form_user_callback(self, action, prev_msg_action=None):
-        return f"User;{action};{prev_msg_action}"
+    def form_user_callback(self, action, user_id="", prev_msg_action=None):
+        return f"User;{action};{user_id};{prev_msg_action}"
 
 
     #########
@@ -45,9 +48,13 @@ class Section:
     # Answer Callbacks
     ##################
 
-    def in_development(self, call):
-        in_development_text = self.data.message.under_development
+    def answer_in_development(self, call):
+        in_development_text = "В розробці"
         self.bot.answer_callback_query(call.id, text=in_development_text)
+
+    def answer_wrong_action(self, call):
+        wrong_action_text = "Неправильний action в callback.data"
+        self.bot.answer_callback_query(call.id, text=wrong_action_text)
 
     #######
     # Utils
@@ -68,25 +75,25 @@ class Section:
         if prev_msg_action == "Delete":
             self.bot.delete_message(chat_id, message_id)
 
-        elif prev_msg_action == "Edit":
+        elif prev_msg_action == "Edit": # TODO - add edit message caption (if it possible)
             try:
                 self.bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, 
-                                           reply_markup=reply_markup, parse_mode="HTML")
+                                           reply_markup=reply_markup)
                 return
             except:
                 try:
                     self.bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, 
-                                                       reply_markup=reply_markup, parse_mode="HTML")
+                                                       reply_markup=reply_markup)
                 except:
                     return
                 return
         
         # Send new message
         if photo is None:
-            self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup, parse_mode="HTML")
+            self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
         else:
             try:
                 self.bot.send_photo(chat_id=chat_id, caption=text, photo=photo, 
-                                    reply_markup=reply_markup, parse_mode="HTML")
+                                    reply_markup=reply_markup)
             except:
-                self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup, parse_mode="HTML")
+                self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)

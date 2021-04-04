@@ -1,7 +1,5 @@
-from ..data import Data
+from ..data import Data, User
 
-class Quiz:
 
-    @staticmethod
-    def start_starting_quiz(self, chat_id, data: Data):
-        pass
+def start_starting_quiz(self, user: User, data: Data):
+    pass

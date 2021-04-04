@@ -9,7 +9,7 @@ from .section import Section
 
 class User(Section):
 
-    BUTTONS = ["Найти вакансію", "Хто ми?", "Профіль"]
+    TEXT_BUTTONS = ["Найти вакансію", "Хто ми?", "Профіль"]
 
     def __init__(self, data: Data):
         super().__init__(data=data)
@@ -17,8 +17,25 @@ class User(Section):
     def process_callback(self, call: CallbackQuery, user: User):
         action = call.data.split(";")[1]
 
-    def process_text(self, text):
-        pass
+        if action == "ApplyCV":
+            self.apply_for_vacancy(user, cv=True)
+
+        elif action == "Apply":
+            self.apply_for_vacancy(user, basic=True)
+        
+        else:
+            self.answer_wrong_action(call)
+
+    def process_text(self, text: str, user: User):
+        
+        if text == self.TEXT_BUTTONS[0]:
+            self.send_new_vacancy(user)
+
+        elif text == self.TEXT_BUTTONS[1]:
+            pass
+
+        elif text == self.TEXT_BUTTONS[2]:
+            self.send_profile_menu(user)
 
 
     def send_start_menu(self):
@@ -31,20 +48,20 @@ class User(Section):
 
 
 
-    def send_new_vacancy(self):
+    def send_new_vacancy(self, user: User):
         pass
 
-    def apply_for_vacancy(self, chat_id, cv=False, basic=False):
-        pass
-
-
-
-    def send_profile_menu(self):
+    def apply_for_vacancy(self, user: User, cv=False, basic=False):
         pass
 
 
 
-    def change_account_type(self, chat_id):
+    def send_profile_menu(self, user: User):
+        pass
+
+
+
+    def change_account_type(self, user: User):
         pass
 
 
