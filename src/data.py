@@ -2,7 +2,13 @@ from telebot import TeleBot
 import mongoengine as me
 from datetime import datetime
 
+import string
+import random
+from datetime import datetime
+
 class Data:
+
+    TEST_PHOTO = "https://cont.ws/uploads/pic/2019/3/regnum_picture_14956618541757852_big.png"
 
     def __init__(self, conn_string: str, bot: TeleBot):
         self.bot = bot
@@ -10,8 +16,41 @@ class Data:
         me.connect(host=conn_string)
         print("connection success ")
 
+    def add_test_company_with_vacancies(self, vacancies_number=2):
+
+        # company
+        name = self._generate_string()
+        photo_id = self.TEST_PHOTO
+        description = self._generate_string(long=True)
+        vacancy_counter = 20              ##############?
+        HR = None
+        token = self._generate_string()
+        registration_date = datetime.now()
+
+        test_company = Company(name=name, photo_id=photo_id, description=description, 
+                               vacancy_counter=vacancy_counter, HR=HR, token=token, 
+                               registration_date=registration_date)
+        test_company.save()
+        
+        # vacancies
+        for i in range(vacancies_number):
+            company = test_company
+            name = self._generate_string()        
+            tag = self._generate_string()
+            salary = f"{random.randint(1000, 5000)}$"
+            experience = self._generate_string()
+            employment_type = self._generate_string()
+            description = self._generate_string(long=True)
+            add_date = datetime.now()
+            last_update_date = datetime.now()
+            active_days_left = 14
+            is_active = True
+
+            Vacancy(company=company, name=name, tag=tag, salary=salary, experience=experience, employment_type=employment_type, 
+                    description=description, add_date=add_date, last_update_date=last_update_date, active_days_left=active_days_left, is_active=is_active).save()
+
     # HZ CHI TREBA
-    def add_user(self, chat_id, name, surname, username, interests=[], experience="", 
+    def _add_test_user(self, chat_id, name, surname, username, interests=[], experience="", 
                  employment="", apply_counter=0, registration_date=None, last_update_date=None, 
                  last_interaction_date=None, hr_status=False):
 
@@ -24,6 +63,16 @@ class Data:
              apply_counter=apply_counter, registration_date=registration_date,
              last_update_date=last_update_date, last_interaction_date=last_interaction_date,
              hr_status=hr_status).save()
+
+
+    def _generate_string(self, long=False):
+        letters = string.ascii_letters
+        if long is False:
+            length = random.randint(10, 30)
+        else:
+            length = random.randint(300, 500)
+
+        return ''.join(random.choice(letters) for i in range(length))
 
 
 class EJF(me.Document):
@@ -98,7 +147,7 @@ class VacancyApplyLog(me.Document):
     """
     vacancy = me.ReferenceField(Vacancy, required=True)
     user = me.ReferenceField(User, required=True)
-    cv = me.ReferenceField(CV, required=True)
+    cv_file_id = me.IntField(required=True)
     log_datetime = me.DateTimeField(required=True)
 
 
