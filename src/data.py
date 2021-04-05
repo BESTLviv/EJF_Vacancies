@@ -26,10 +26,10 @@ class Data:
              hr_status=hr_status).save()
 
 
-class CV(me.Document):
-    cv_file = me.FileField(required=True)
-    last_update_date = me.DateTimeField(required=True)
-    add_date = me.DateTimeField(required=True)
+class EJF(me.Document):
+    filters_interest = me.ListField(me.StringField, default=list())
+    filters_experience = me.ListField(me.StringField, default=list())
+    filters_employment = me.ListField(me.StringField, default=list())
 
 
 class User(me.Document):
@@ -40,7 +40,7 @@ class User(me.Document):
     interests = me.ListField(default=list()) #
     experience = me.StringField(default="") #
     employment = me.StringField(default="") #
-    cv = me.ReferenceField(CV, default=None)
+    cv_file_id = me.IntField(default=None)
     apply_counter = me.IntField(default=20) #
     registration_date = me.DateTimeField(required=True) #
     last_update_date = me.DateTimeField(required=True)
