@@ -34,14 +34,14 @@ updater = Updater()
 @bot.message_handler(commands=['start'])
 def start_bot(message):
     user = updater.update_user_interaction_time(message)
-
+    
     # If in Job Fair mode
     if False:
         pass
 
     # If user is HR
     elif user.hr_status is True:
-        hr_section.send_start_menu()
+        hr_section.send_start_menu(user=user)
 
     # If user is basic user
     else:
@@ -72,11 +72,16 @@ def handle_text_buttons(message):
     message_text = message.text
     
     try:
+
         if message_text in user_section.TEXT_BUTTONS:
             user_section.process_text(message_text, user)
         
         elif message_text in job_fair_section.TEXT_BUTTONS:
             job_fair_section.process_text(message_text, user)
+        
+        else:
+            pass # answer user that it was invalid input (in utils.py maybe)
+
     except:
         pass
 
