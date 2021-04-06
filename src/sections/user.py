@@ -52,7 +52,8 @@ class User(Section):
 
 
     def begin_start_quiz(self):
-        Quiz.start_starting_quiz(data=self.data)
+        #quiz.start_starting_quiz(data=self.data)
+        pass
 
 
 
