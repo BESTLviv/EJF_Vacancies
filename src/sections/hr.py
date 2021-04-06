@@ -46,6 +46,10 @@ class HR(Section):
     def send_vacany_list(self, user: User):
         pass
 
+
+        
+        
+
     def add_vacancy(self):
         pass
     
