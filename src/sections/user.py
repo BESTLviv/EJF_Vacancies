@@ -4,9 +4,9 @@ from ..data import (
     Data,
     User
 )
-from ..objects.quiz import Quiz
+from ..objects import quiz
 from .section import Section
-
+from ..objects import interests
 class User(Section):
 
     TEXT_BUTTONS = ["Найти вакансію", "Хто ми?", "Профіль"]
@@ -17,12 +17,16 @@ class User(Section):
     def process_callback(self, call: CallbackQuery, user: User):
         action = call.data.split(";")[1]
 
+
         if action == "ApplyCV":
             self.apply_for_vacancy(user, cv=True)
 
         elif action == "Apply":
             self.apply_for_vacancy(user, basic=True)
         
+        elif action == "Interests":
+            self.send_interests(user)
+
         else:
             self.answer_wrong_action(call)
 
@@ -41,6 +45,10 @@ class User(Section):
     def send_start_menu(self):
         pass
 
+    def send_interests(self, user: User):
+        interests.send_interests(user)
+
+        
 
 
     def begin_start_quiz(self):
