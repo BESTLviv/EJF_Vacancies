@@ -12,7 +12,6 @@ def create_parser():
     parser.add_argument('-db', '--database')
     return parser
 
-
 def createConfig(path):
     """Using parser to output parameters from console"""
     config = configparser.ConfigParser()
