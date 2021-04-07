@@ -46,7 +46,8 @@ class User(Section):
         pass
 
     def send_interests(self, user: User):
-        interests.send_interests(user)
+        #interests.send_interests(user)
+        pass
 
         
 
