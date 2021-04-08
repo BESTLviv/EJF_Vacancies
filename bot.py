@@ -34,18 +34,19 @@ updater = Updater()
 @bot.message_handler(commands=['start'])
 def start_bot(message):
     user = updater.update_user_interaction_time(message)
+    #bot.send_message(message.chat.id,  'Привіт ')
 
     # If in Job Fair mode
-    if False:
-        pass
+    #if False:
+        #pass
 
     # If user is HR
-    elif user.hr_status is True:
-        hr_section.send_start_menu()
+    #elif user.hr_status is True:
+        #hr_section.send_start_menu()
 
     # If user is basic user
-    else:
-        user_section.send_start_menu()
+    #else:
+    user_section.send_start_menu(user)
 
 
 @bot.callback_query_handler(func=lambda call: True)

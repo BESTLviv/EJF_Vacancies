@@ -1,4 +1,5 @@
 from telebot.types import CallbackQuery
+from telebot import types
 
 from ..data import (
     Data,
@@ -36,36 +37,48 @@ class User(Section):
             self.send_new_vacancy(user)
 
         elif text == self.TEXT_BUTTONS[1]:
-            pass
+            self.send_about_info(user)
 
         elif text == self.TEXT_BUTTONS[2]:
             self.send_profile_menu(user)
 
+    def send_start_menu(self, user: User):
 
-    def send_start_menu(self):
-        pass
+        btn_vacancy = types.KeyboardButton(text=self.TEXT_BUTTONS[0])
+        btn_who = types.KeyboardButton(text=self.TEXT_BUTTONS[1])
+        btn_profile = types.KeyboardButton(text=self.TEXT_BUTTONS[2])
+        
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add(btn_vacancy)
+        markup.add(btn_who, btn_profile)
+
+        self.bot.send_message(user.chat_id, text="test", reply_markup=markup)
+
 
     def send_interests(self, user: User):
-        interests.send_interests(user)
+        pass
+        #interests.send_interests(user)
 
         
 
 
     def begin_start_quiz(self):
-        Quiz.start_starting_quiz(data=self.data)
+        pass
+        #Quiz.start_starting_quiz(data=self.data)
 
 
 
     def send_new_vacancy(self, user: User):
-        pass
+        self.bot.send_message(user.chat_id, text='Test')
+
+    def send_about_info(self, user: User):
+        self.bot.send_message(user.chat_id, text='Test')
 
     def apply_for_vacancy(self, user: User, cv=False, basic=False):
         pass
 
-
-
     def send_profile_menu(self, user: User):
-        pass
+        self.bot.send_message(user.chat_id, text='Test')
 
 
 
