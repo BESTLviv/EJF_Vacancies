@@ -19,6 +19,9 @@ class Data:
         me.connect(host=conn_string)
         print("connection success ")
 
+        self.reinit_ejf_table()
+        print("ejf and content tables have been reinitialized")
+
     def add_test_company_with_vacancies(self, vacancies_number=2):
 
         # company
@@ -132,6 +135,27 @@ class Data:
 
         quiz.save()
 
+    def reinit_ejf_table(self):
+        # delete collections
+        JobFair.objects.delete()
+        Content.objects.delete()
+
+        # create content table
+        content = Content()
+        content.user_start_text = (
+            "Шукай роботу в нас!\n\nКнопку натискай - роботу шукай!"
+        )
+        content.user_start_photo = self.TEST_PHOTO
+        content.save()
+
+        # create ejf table
+        ejf = JobFair()
+        ejf.filters_interest = ["Full Stack", "Front End", "Data Science"]
+        ejf.filters_experience = ["1 рік", "3+ років"]
+        ejf.filters_employment = ["Full time", "Part time"]
+        ejf.content = content
+        ejf.save()
+
     # HZ CHI TREBA
     def _add_test_user(
         self,
@@ -178,10 +202,16 @@ class Data:
         return "".join(random.choice(letters) for i in range(length))
 
 
-class EJF(me.Document):
+class Content(me.Document):
+    user_start_text = me.StringField()
+    user_start_photo = me.StringField()
+
+
+class JobFair(me.Document):
     filters_interest = me.ListField(default=list())
     filters_experience = me.ListField(default=list())
     filters_employment = me.ListField(default=list())
+    content = me.ReferenceField(Content)
 
 
 class User(me.Document):

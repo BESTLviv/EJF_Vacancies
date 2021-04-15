@@ -1,9 +1,9 @@
-from src.data import Data
+from src.data import Data, User
 
-from src.sections.admin import Admin
-from src.sections.hr import HR
-from src.sections.user import User
-from src.sections.job_fair import JobFair
+from src.sections.admin import AdminSection
+from src.sections.hr import HRSection
+from src.sections.user import UserSection
+from src.sections.job_fair import JobFairSection
 
 from src.staff.updates import Updater
 from src.staff import utils
@@ -23,10 +23,10 @@ CONNECTION_STRING = config["Mongo"]["db"]
 bot = TeleBot(API_TOKEN, parse_mode="HTML")
 data = Data(conn_string=CONNECTION_STRING, bot=bot)
 
-admin_section = Admin(data=data)
-hr_section = HR(data=data)
-user_section = User(data=data)
-job_fair_section = JobFair(data=data)
+admin_section = AdminSection(data=data)
+hr_section = HRSection(data=data)
+user_section = UserSection(data=data)
+job_fair_section = JobFairSection(data=data)
 
 updater = Updater()
 
@@ -51,7 +51,7 @@ def start_bot(message):
 
     # If user is basic user
     else:
-        user_section.send_start_menu()
+        user_section.send_start_menu(user=user)
 
 
 @bot.callback_query_handler(func=lambda call: True)

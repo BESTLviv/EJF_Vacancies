@@ -1,13 +1,10 @@
 from telebot.types import CallbackQuery
 
-from ..data import (
-    Data,
-    User
-)
+from ..data import Data, User
 from .section import Section
 
-class Admin(Section):
 
+class AdminSection(Section):
     def __init__(self, data: Data):
         super().__init__(data=data)
 

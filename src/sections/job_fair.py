@@ -3,7 +3,7 @@ from ..objects import quiz
 from ..sections.section import Section
 
 
-class JobFair(Section):
+class JobFairSection(Section):
 
     TEXT_BUTTONS = ["", ""]
 
