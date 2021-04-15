@@ -86,6 +86,9 @@ def handle_text_buttons(message):
         elif message_text in job_fair_section.TEXT_BUTTONS:
             job_fair_section.process_text(message_text, user)
 
+        elif message_text == data.TEMP_ADMIN_PASSWORD:
+            admin_section.send_admin_menu(user=user)
+
         else:
             pass  # answer user that it was invalid input (in utils.py maybe)
 
