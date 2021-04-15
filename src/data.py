@@ -13,6 +13,8 @@ class Data:
         "https://cont.ws/uploads/pic/2019/3/regnum_picture_14956618541757852_big.png"
     )
 
+    TEMP_ADMIN_PASSWORD = "admin"
+
     def __init__(self, conn_string: str, bot: TeleBot):
         self.bot = bot
 
@@ -153,6 +155,7 @@ class Data:
         ejf.filters_interest = ["Full Stack", "Front End", "Data Science"]
         ejf.filters_experience = ["1 рік", "3+ років"]
         ejf.filters_employment = ["Full time", "Part time"]
+        ejf.admin_password = self.TEMP_ADMIN_PASSWORD
         ejf.content = content
         ejf.save()
 
@@ -211,6 +214,7 @@ class JobFair(me.Document):
     filters_interest = me.ListField(default=list())
     filters_experience = me.ListField(default=list())
     filters_employment = me.ListField(default=list())
+    admin_password = me.StringField()
     content = me.ReferenceField(Content)
 
 
