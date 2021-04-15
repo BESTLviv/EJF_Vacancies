@@ -70,14 +70,14 @@ class Data:
             ).save()
 
     def add_start_quiz(self):
-        quiz = Quiz(name="StartQuiz")
+        quiz = Quiz(name="StartQuiz", is_required=True)
 
         q_name_surname = Question(
             name="name_surname", message="Дай знати як тебе звати!"
         )
 
         q_age = Question(
-            name="age", message="Дай знати скільки тобі років!", regex="^[0-9]*$"
+            name="age", message="Дай знати скільки тобі років!", regex="[1-9][0-9]?"
         )
 
         q_city = Question(
@@ -94,10 +94,10 @@ class Data:
         )
 
         q_email = Question(
-            name="contact",
+            name="email",
             message="Надішли мені свою електронну адресу!\n",
             regex="^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$",
-            wrong_answer_message="Електронна адреса повинна бути формати <b>email@email.com</b>",
+            wrong_answer_message="Електронна адреса повинна бути формату <b>email@email.com</b>",
         )
 
         q_study_type = Question(
@@ -194,7 +194,7 @@ class User(me.Document):
     employment = me.StringField(default="")
     cv_file_id = me.IntField(default=None)
     apply_counter = me.IntField(default=20)
-    additional_info = me.ListField()
+    additional_info = me.DictField(default=None)
     registration_date = me.DateTimeField(required=True)
     last_update_date = me.DateTimeField(required=True)
     last_interaction_date = me.DateTimeField(required=True)
@@ -246,6 +246,7 @@ class Answer(me.EmbeddedDocument):
 class Quiz(me.Document):
     name = me.StringField(required=True)
     questions = me.ListField(me.EmbeddedDocumentField(Question), default=list())
+    is_required = me.BooleanField(default=False)
 
 
 class VacancyPreviewLog(me.Document):

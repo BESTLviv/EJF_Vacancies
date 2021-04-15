@@ -21,7 +21,7 @@ class InputException(Exception):
     pass
 
 
-def start_starting_quiz(user: User, bot: TeleBot):
+def start_starting_quiz(user: User, bot: TeleBot, final_func: Callable):
     start_quiz = Quiz.objects.filter(name="StartQuiz")[0]
     start_quiz_questions = start_quiz.questions
 
@@ -30,7 +30,15 @@ def start_starting_quiz(user: User, bot: TeleBot):
 
     sleep(1)
 
-    send_question(user, bot, question, quiz_iterator)
+    send_question(
+        user,
+        bot,
+        question,
+        quiz_iterator,
+        save_func=_save_answers_to_user,
+        final_func=final_func,
+        container={},
+    )
 
 
 def send_question(
@@ -40,7 +48,7 @@ def send_question(
     quiz_iterator: Iterator,
     save_func: Callable = None,
     final_func: Callable = None,
-    container: list = None,
+    container=None,
 ):
     chat_id = user.chat_id
     text = question.message
@@ -58,7 +66,7 @@ def send_question(
         quiz_iterator=quiz_iterator,
         save_func=save_func,
         final_func=final_func,
-        container=[],
+        container=container,
     )
 
 
@@ -90,13 +98,24 @@ def process_message(message: Message, **kwargs):
                         if not pattern.search(input_text):
                             raise InputException
 
+                    # if everything is all right -> save it to temp container
+                    container[question.name] = input_text
+
                 # if text input allowed only from keyboard
                 else:
                     if input_text not in question.buttons:
                         raise InputException
 
+                    container[question.name] = input_text
+
             elif content_type == "contact":
-                pass
+                contact = message.contact
+
+                phone = contact.phone_number
+                user_id = contact.user_id
+
+                container["phone"] = phone
+                container["user_id"] = user_id
 
             else:
                 raise InputException
@@ -122,10 +141,19 @@ def process_message(message: Message, **kwargs):
             final_func=final_func,
             container=container,
         )
+    # if questions ended
+    else:
+        # save data if needed
+        if save_func:
+            save_func(user, container)
+
+        # send step after finish
+        if final_func:
+            final_func(user)
 
 
 def _create_answer_markup(question: Question) -> ReplyKeyboardMarkup:
-    answer_markup = ReplyKeyboardMarkup(one_time_keyboard=True)
+    answer_markup = ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
 
     if question.input_type == "text":
         for button in question.buttons:
@@ -141,3 +169,14 @@ def _create_answer_markup(question: Question) -> ReplyKeyboardMarkup:
         answer_markup.add(answer_btn)
 
     return answer_markup
+
+
+def _handle_commands(message: Message, command_text: str):
+
+    if command_text == "\start":
+        pass
+
+
+def _save_answers_to_user(user: User, container):
+    user.additional_info = container
+    user.save()

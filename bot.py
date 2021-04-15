@@ -38,9 +38,8 @@ def start_bot(message):
     user = updater.update_user_interaction_time(message)
 
     # If it is the first start
-    if user.last_interaction_date != user.registration_date:
-        # send_welcome_message_and_start_quiz(user)
-        pass
+    if user.last_interaction_date == user.registration_date:
+        send_welcome_message_and_start_quiz(user)
 
     # If in Job Fair mode
     elif False:
@@ -98,7 +97,15 @@ def send_welcome_message_and_start_quiz(user: User):
     welcome_text = "Привіт друже!\nНарешті ярмарок...\nЯк класно..."
     bot.send_photo(user.chat_id, photo=data.TEST_PHOTO, caption=welcome_text)
 
-    quiz.start_starting_quiz(user, bot)
+    # if Job Fair not started
+    if True:
+        final_func = job_fair_section.send_start_menu
+
+    # if Job Fair ended
+    else:
+        final_func = user_section.send_start_menu
+
+    quiz.start_starting_quiz(user, bot, final_func)
 
 
 if __name__ == "__main__":
