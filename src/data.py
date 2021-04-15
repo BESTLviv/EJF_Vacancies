@@ -6,13 +6,16 @@ import string
 import random
 from datetime import datetime
 
+
 class Data:
 
-    TEST_PHOTO = "https://cont.ws/uploads/pic/2019/3/regnum_picture_14956618541757852_big.png"
+    TEST_PHOTO = (
+        "https://cont.ws/uploads/pic/2019/3/regnum_picture_14956618541757852_big.png"
+    )
 
     def __init__(self, conn_string: str, bot: TeleBot):
         self.bot = bot
-        
+
         me.connect(host=conn_string)
         print("connection success ")
 
@@ -22,20 +25,26 @@ class Data:
         name = self._generate_string()
         photo_id = self.TEST_PHOTO
         description = self._generate_string(long=True)
-        vacancy_counter = 20              ##############?
+        vacancy_counter = 20  # ?
         HR = None
         token = self._generate_string()
         registration_date = datetime.now()
 
-        test_company = Company(name=name, photo_id=photo_id, description=description, 
-                               vacancy_counter=vacancy_counter, HR=HR, token=token, 
-                               registration_date=registration_date)
+        test_company = Company(
+            name=name,
+            photo_id=photo_id,
+            description=description,
+            vacancy_counter=vacancy_counter,
+            HR=HR,
+            token=token,
+            registration_date=registration_date,
+        )
         test_company.save()
-        
+
         # vacancies
         for i in range(vacancies_number):
             company = test_company
-            name = self._generate_string()        
+            name = self._generate_string()
             tag = self._generate_string()
             salary = f"{random.randint(1000, 5000)}$"
             experience = self._generate_string()
@@ -46,24 +55,118 @@ class Data:
             active_days_left = 14
             is_active = True
 
-            Vacancy(company=company, name=name, tag=tag, salary=salary, experience=experience, employment_type=employment_type, 
-                    description=description, add_date=add_date, last_update_date=last_update_date, active_days_left=active_days_left, is_active=is_active).save()
+            Vacancy(
+                company=company,
+                name=name,
+                tag=tag,
+                salary=salary,
+                experience=experience,
+                employment_type=employment_type,
+                description=description,
+                add_date=add_date,
+                last_update_date=last_update_date,
+                active_days_left=active_days_left,
+                is_active=is_active,
+            ).save()
+
+    def add_start_quiz(self):
+        quiz = Quiz(name="StartQuiz", is_required=True)
+
+        q_name_surname = Question(
+            name="name_surname", message="Дай знати як тебе звати!"
+        )
+
+        q_age = Question(
+            name="age", message="Дай знати скільки тобі років!", regex="[1-9][0-9]?"
+        )
+
+        q_city = Question(
+            name="city",
+            message="Дай знати з якого ти міста!\nЯкщо твого міста немає серед перелічених то введи його назву!",
+            buttons=["Львів", "Київ", "Новояворівськ", "Донецьк", "Стамбул"],
+        )
+
+        q_contact = Question(
+            name="contact",
+            message="Надішли мені свій контакт!\nХочу мати твій номер телефона",
+            buttons=["Надіслати контакт"],
+            input_type="contact",
+        )
+
+        q_email = Question(
+            name="email",
+            message="Надішли мені свою електронну адресу!\n",
+            regex="^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$",
+            wrong_answer_message="Електронна адреса повинна бути формату <b>email@email.com</b>",
+        )
+
+        q_study_type = Question(
+            name="type_of_study",
+            message="Вибери наступне",
+            buttons=[
+                "1-2 курс",
+                "3-4 курс",
+                "4+ курс",
+                "Вчусь у школі",
+                "Закінчив університет",
+            ],
+            allow_user_input=False,
+        )
+
+        q_agree = Question(
+            name="user_agreements",
+            message="Натискаючи на кнопку ви погоджуєтесь на обробку свої даних",
+            buttons=["Погоджуюсь з тобою"],
+            allow_user_input=False,
+        )
+
+        quiz.questions = [
+            q_name_surname,
+            q_age,
+            q_city,
+            q_contact,
+            q_email,
+            q_study_type,
+            q_agree,
+        ]
+
+        quiz.save()
 
     # HZ CHI TREBA
-    def _add_test_user(self, chat_id, name, surname, username, interests=[], experience="", 
-                 employment="", apply_counter=0, registration_date=None, last_update_date=None, 
-                 last_interaction_date=None, hr_status=False):
+    def _add_test_user(
+        self,
+        chat_id,
+        name,
+        surname,
+        username,
+        interests=[],
+        experience="",
+        employment="",
+        apply_counter=0,
+        registration_date=None,
+        last_update_date=None,
+        last_interaction_date=None,
+        hr_status=False,
+    ):
 
         registration_date = datetime.now()
         last_interaction_date = registration_date
         last_update_date = registration_date
 
-        User(chat_id=chat_id, name=name, surname=surname, username=username,
-             interests=interests, experience=experience, employment=employment,
-             apply_counter=apply_counter, registration_date=registration_date,
-             last_update_date=last_update_date, last_interaction_date=last_interaction_date,
-             hr_status=hr_status).save()
-
+        User(
+            chat_id=chat_id,
+            name=name,
+            surname=surname,
+            username=username,
+            interests=interests,
+            experience=experience,
+            employment=employment,
+            apply_counter=apply_counter,
+            registration_date=registration_date,
+            last_update_date=last_update_date,
+            last_interaction_date=last_interaction_date,
+            hr_status=hr_status,
+        ).save()
 
     def _generate_string(self, long=False):
         letters = string.ascii_letters
@@ -72,26 +175,27 @@ class Data:
         else:
             length = random.randint(300, 500)
 
-        return ''.join(random.choice(letters) for i in range(length))
+        return "".join(random.choice(letters) for i in range(length))
 
 
 class EJF(me.Document):
-    filters_interest = me.ListField(me.StringField, default=list())
-    filters_experience = me.ListField(me.StringField, default=list())
-    filters_employment = me.ListField(me.StringField, default=list())
+    filters_interest = me.ListField(default=list())
+    filters_experience = me.ListField(default=list())
+    filters_employment = me.ListField(default=list())
 
 
 class User(me.Document):
-    chat_id = me.IntField(required=True, unique=True) #
+    chat_id = me.IntField(required=True, unique=True)
     name = me.StringField(required=True)
     surname = me.StringField(required=True)
     username = me.StringField(required=True)
-    interests = me.ListField(default=list()) #
-    experience = me.StringField(default="") #
-    employment = me.StringField(default="") #
+    interests = me.ListField(default=list())
+    experience = me.StringField(default="")
+    employment = me.StringField(default="")
     cv_file_id = me.IntField(default=None)
-    apply_counter = me.IntField(default=20) #
-    registration_date = me.DateTimeField(required=True) #
+    apply_counter = me.IntField(default=20)
+    additional_info = me.DictField(default=None)
+    registration_date = me.DateTimeField(required=True)
     last_update_date = me.DateTimeField(required=True)
     last_interaction_date = me.DateTimeField(required=True)
     hr_status = me.BooleanField(default=False)
@@ -101,16 +205,16 @@ class Company(me.Document):
     name = me.StringField(required=True, unique=True)
     photo_id = me.StringField(required=True)
     description = me.StringField(required=True)
-    vacancy_counter = me.IntField(default=20)                 ##############?
+    vacancy_counter = me.IntField(default=20)  # ?
     HR = me.ReferenceField(User, required=False)
     token = me.StringField(required=True)
     registration_date = me.DateTimeField(required=True)
-    #vacancy_list = me.ListField(me.EmbeddedDocumentField, Vacancy, required=False)
+    # vacancy_list = me.ListField(me.EmbeddedDocumentField, Vacancy, required=False)
 
 
 class Vacancy(me.Document):
     company = me.ReferenceField(Company, required=True)
-    name = me.StringField(required=True)           
+    name = me.StringField(required=True)
     tag = me.StringField(required=True)
     salary = me.StringField(required=True)
     experience = me.StringField(required=True)
@@ -122,20 +226,34 @@ class Vacancy(me.Document):
     is_active = me.BooleanField(default=False)
 
 
-class Question(me.EmbeddedDocument):                        ########### Not ready yet
-    question_text = me.StringField(required=True)
-    answers_list = me.ListField(me.StringField)
-
-
-class Quiz(me.Document):                                    ########### Not ready yet
+class Question(me.EmbeddedDocument):
     name = me.StringField(required=True)
-    questions = me.ListField(me.EmbeddedDocumentField(Question))
+    message = me.StringField(required=True)
+    photo = me.StringField(default=None)
+    buttons = me.ListField(default=list())
+    input_type = me.StringField(
+        choices=["text", "photo", "contact", "location"], default="text"
+    )
+    allow_user_input = me.BooleanField(default=True)
+    regex = me.StringField(default=None)
+    wrong_answer_message = me.StringField(default="Неправильний формат!")
+
+
+class Answer(me.EmbeddedDocument):
+    pass
+
+
+class Quiz(me.Document):
+    name = me.StringField(required=True)
+    questions = me.ListField(me.EmbeddedDocumentField(Question), default=list())
+    is_required = me.BooleanField(default=False)
 
 
 class VacancyPreviewLog(me.Document):
     """
     Class for logging user viewing of vacancy.
     """
+
     vacancy = me.ReferenceField(Vacancy, required=True)
     user = me.ReferenceField(User, required=True)
     log_datetime = me.DateTimeField(required=True)
@@ -145,6 +263,7 @@ class VacancyApplyLog(me.Document):
     """
     Class for logging any applying for a job.
     """
+
     vacancy = me.ReferenceField(Vacancy, required=True)
     user = me.ReferenceField(User, required=True)
     cv_file_id = me.IntField(required=True)
@@ -155,13 +274,15 @@ class VacancyPromotionLog(me.Document):
     """
     Class for logging every promotion.
     """
+
     vacancy = me.ReferenceField(Vacancy, required=True)
     auditory_tag = me.StringField(required=True)
     log_datetime = me.DateField(required=True)
 
-#from datetime import datetime
+
+# from datetime import datetime
 #
-#if __name__ == '__main__':
+# if __name__ == '__main__':
 #    #table1 = User().save()  # insert new user in table
 #
 #    me.connect(host="mongodb+srv://HYaroslav:4486@ejfcluster.jdquq.mongodb.net/ejf_vacancy_bot?retryWrites=true&w=majority")
@@ -201,23 +322,23 @@ class VacancyPromotionLog(me.Document):
 #    vacancy.employment_type = "Full Time"
 #    vacancy.description = """Requirements:
 #
-#4+ years of experience in Python development;Experience in Django, Postgre, SQL,;Build REST API for Database CRUD Operations;Understanding Python deployment flow (django, wsgi, nginx, heroku etc.);Experience with Linux, bash scripting;Experience with CI/CD pipelines and devops practices for Python developments;Ability unit/integration tests.Experience with Swagger and Git Hub
+# 4+ years of experience in Python development;Experience in Django, Postgre, SQL,;Build REST API for Database CRUD Operations;Understanding Python deployment flow (django, wsgi, nginx, heroku etc.);Experience with Linux, bash scripting;Experience with CI/CD pipelines and devops practices for Python developments;Ability unit/integration tests.Experience with Swagger and Git Hub
 #
-#Duties:
+# Duties:
 #
-#Development of projects from scratch
-#Development of project modules.
-#Writing an API.
-#Supporting of ready projects
-#Terms:
+# Development of projects from scratch
+# Development of project modules.
+# Writing an API.
+# Supporting of ready projects
+# Terms:
 #
-#Basic communication in Telegram (you need to be in touch with some of our distant workers).
-#Working in a team of programmers.
-#Using Trello task manager
-#Git Hub
-#Additional info:
+# Basic communication in Telegram (you need to be in touch with some of our distant workers).
+# Working in a team of programmers.
+# Using Trello task manager
+# Git Hub
+# Additional info:
 #
-#Please be ready to do testing task before the interview"""
+# Please be ready to do testing task before the interview"""
 #    vacancy.add_date = now
 #    vacancy.last_update_date = now
 #    #vacancy.save()
