@@ -43,8 +43,7 @@ class User(Section):
         pass
 
     def send_interests(self, user: User):
-        # interests.send_interests(user)
-        pass
+        interests.send_interests(user)
 
     def begin_start_quiz(self):
         # quiz.start_starting_quiz(bot=self.bot)
