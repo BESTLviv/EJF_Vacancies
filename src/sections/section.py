@@ -101,7 +101,7 @@ class Section:
                 # edit caption + photo
                 elif photo and call.message.content_type == "photo":
                     # if photo was edited
-                    if True:
+                    if call.message.photo[0].file_id == photo:
                         self.bot.edit_message_media(
                             chat_id=chat_id,
                             message_id=message_id,
@@ -125,7 +125,7 @@ class Section:
                         )
                 else:
                     print(
-                        "You cannot make changes without changes. Or you are trying to edit photo in message that doesnt have photo"
+                        "You are trying to edit photo in message that doesnt have photo"
                     )
 
                 return
