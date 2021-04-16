@@ -124,8 +124,8 @@ class AdminSection(Section):
 
         cv_menu_text = (
             f"<b>Загальна кількість загружених CV</b> - {current_cv_number}\n\n"
-            + f"<b>Останній час оновлення архіву</b> - {ejf.cv_archive_last_update}\n"
-            + f"<b>Кількість CV</b> - {ejf.cv_archive_size}",
+            f"<b>Останній час оновлення архіву</b> - {ejf.cv_archive_last_update}\n"
+            f"<b>Кількість CV</b> - {ejf.cv_archive_size}"
         )
 
         return cv_menu_text
