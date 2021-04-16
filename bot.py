@@ -92,8 +92,31 @@ def handle_text_buttons(message):
         else:
             pass  # answer user that it was invalid input (in utils.py maybe)
 
-    except:
-        pass
+    except Exception as e:
+        print(e)
+
+
+@bot.message_handler(content_types=["document"])
+def test_save_cv(message):
+    user = updater.update_user_interaction_time(message)
+    chat_id = user.chat_id
+
+    file_id = message.document.file_id
+    file_name = message.document.file_name
+    file_size = message.document.file_size
+
+    if file_size > 1024 ** 2 * 5:
+        bot.send_message(chat_id, text="Приймаю тільки файли менше 5 МБ (")
+
+    elif file_name.split(".")[-1] != "pdf":
+        bot.send_message(chat_id, text="Приймаю тільки файли формату pdf")
+
+    else:
+        user.cv_file_id = file_id
+        user.cv_file_name = file_name
+        user.save()
+        bot.send_message(chat_id, text=f"Дякую {user.name}!")
+        print(f"{user.name} загрузив {file_name} розміром {file_size/(1024**2)} МБ")
 
 
 def send_welcome_message_and_start_quiz(user: User):
