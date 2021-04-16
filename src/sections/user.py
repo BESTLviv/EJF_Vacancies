@@ -1,13 +1,13 @@
-from telebot.types import CallbackQuery, KeyboardButton, ReplyKeyboardMarkup
+from telebot.types import CallbackQuery, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
 
 from ..data import Data, User, JobFair
 from ..objects import quiz
 from .section import Section
 from ..objects import interests
+from ..objects.vacancy import *
 
 
 class UserSection(Section):
-
     TEXT_BUTTONS = ["Найти вакансію", "Хто ми?", "Профіль"]
 
     def __init__(self, data: Data):
@@ -20,7 +20,7 @@ class UserSection(Section):
             self.apply_for_vacancy(user, cv=True)
 
         elif action == "Apply":
-            self.apply_for_vacancy(user, basic=True)
+            self.apply_for_vacancy(call, user, basic=True)
 
         elif action == "Interests":
             self.send_interests(user)
@@ -69,7 +69,8 @@ class UserSection(Section):
     def send_about_info(self, user: User):
         self.bot.send_message(user.chat_id, text="Test")
 
-    def apply_for_vacancy(self, user: User, cv=False, basic=False):
+    def apply_for_vacancy(self, call: CallbackQuery, user: User, cv=False, basic=False):
+        # TODO do apply for vacancy
         pass
 
     def send_profile_menu(self, user: User):
@@ -77,3 +78,19 @@ class UserSection(Section):
 
     def change_account_type(self, user: User):
         pass
+
+    def send_vacancy_info(self, user: User):
+        message_id = user.chat_id
+        vacancy_info = form_vacancy_info()
+        vacancy_id, vacancy_photo, vacancy_description, company_id = vacancy_info[0], vacancy_info[1], vacancy_info[3], vacancy_info[4]
+        apply_markup = InlineKeyboardMarkup()
+        btn_text = "Податися за допомогою CV"
+        btn_callback = self.form_apply_callback(action="Apply", user_id=message_id, company_id=company_id, vacancy_id=vacancy_id)
+        btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        apply_markup.add(btn)
+        self.bot.send_photo(chat_id=user.chat_id, photo=vacancy_photo, caption=vacancy_description,
+                            parse_mode="HTML")
+
+
+    def form_apply_callback(self, action, user_id="", company_id="", vacancy_id=""):
+        return f"Vacancy;{action};{user_id};{company_id};{vacancy_id}"
