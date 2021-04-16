@@ -1,6 +1,6 @@
 from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
-from ..data import Data, User, JobFair
+from ..data import Data, User, JobFair, Company
 from .section import Section
 
 from ..staff import utils
@@ -56,28 +56,33 @@ class AdminSection(Section):
     def send_company_list(
         self, call: CallbackQuery, user: User
     ) -> InlineKeyboardMarkup:
-        # self.answer_in_development(call)
-        message_id = user.chat_id
+        chat_id = user.chat_id
 
         text = "Оберіть компанію для перегляду детальної інформації."
         markup = InlineKeyboardMarkup()
 
         for company in Company.objects:
             btn_text = company.name
-            btn_callback = self._form_admin_callback(
-                action="CompanyDetails", chat_id=message_id, company_name=company.name
+            btn_callback = form_admin_callback(
+                action="CompanyDetails", user_id=chat_id, company_id=company.name
             )
             btn = InlineKeyboardButton(btn_text, callback_data=btn_callback)
             markup.add(btn)
 
-    def send_company_info(self, chat_id: int, company_name: str):
+        self.bot.edit_message_text(chat_id=chat_id, text=text, reply_markup=markup)
+
+    def send_company_info(self, chat_id="", company_name=""):
         company = Company.objects(tags=company_name)
+        HR = company.HR
         text = (
-            f"<b>Назва</b>: {company.name}\n"
-            f"<b>Про компанію</b>: {company.description}\n"
+            f"<b>Назва: </b> {company.name}\n"
+            f"<b>Про компанію: </b> {company.description}\n"
+            f"<b>HR: </b> {HR.name} {HR.surname}, {HR.username}\n"
         )
 
-        self.bot.send_photo(chat_id=chat_id, photo=company.photo_id, caption=text)
+        self.bot.send_photo(
+            chat_id=chat_id, photo=company.photo_id, caption=text, parse_mode="HTML"
+        )
 
     def send_mailing_menu(self, call: CallbackQuery, user: User):
         self.answer_in_development(call)
