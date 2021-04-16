@@ -2,6 +2,7 @@ from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 
 from ..data import Data, User, JobFair, Company
 from .section import Section
+from ..objects import form_company_description, form_company_list_markup
 
 from ..staff import utils
 
@@ -53,38 +54,19 @@ class AdminSection(Section):
         else:
             self.send_message(call, text=text, reply_markup=self.admin_markup)
 
-    def send_company_list(
-        self, call: CallbackQuery, user: User
-    ) -> InlineKeyboardMarkup:
-        chat_id = user.chat_id
-
+    def send_company_list(self, call: CallbackQuery, user: User):
         text = "Оберіть компанію для перегляду детальної інформації."
-        markup = InlineKeyboardMarkup()
+        markup = form_company_list_markup(user)
+        self.bot.edit_message_text(chat_id=user.chat_id, text=text, reply_markup=markup)
 
-        for company in Company.objects:
-            btn_text = company.name
-            btn_callback = form_admin_callback(
-                action="CompanyDetails",
-                user_id=chat_id,
-                company_id=company.name,
-                edit=True,
-            )
-            btn = InlineKeyboardButton(btn_text, callback_data=btn_callback)
-            markup.add(btn)
-
-        self.bot.edit_message_text(chat_id=chat_id, text=text, reply_markup=markup)
-
-    def send_company_info(self, chat_id="", company_name=""):
-        company = Company.objects(tags=company_name)
-        HR = company.HR
-        text = (
-            f"<b>Назва: </b> {company.name}\n"
-            f"<b>Про компанію: </b> {company.description}\n"
-            f"<b>HR: </b> {HR.name} {HR.surname}, {HR.username}\n"
-        )
-
+    def send_company_info(self, user_id, company_id):
+        user = User.objects.filter(user_id=user_id)
+        text = form_company_description(company_id=company_id)
         self.bot.send_photo(
-            chat_id=chat_id, photo=company.photo_id, caption=text, parse_mode="HTML"
+            chat_id=user.chat_id,
+            photo=company.photo_id,
+            caption=text,
+            parse_mode="HTML",
         )
 
     def send_mailing_menu(self, call: CallbackQuery, user: User):
