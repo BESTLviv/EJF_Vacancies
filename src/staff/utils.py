@@ -20,9 +20,6 @@ def form_and_send_new_cv_archive(bot: TeleBot, user: User):
     ejf = JobFair.objects.first()
     chat_id = user.chat_id
 
-    # show sending document
-    bot.send_chat_action(chat_id, action="upload_document")
-
     # update archive only once in 10 min
     archive_last_update = ejf.cv_archive_last_update
     if archive_last_update:
@@ -36,33 +33,66 @@ def form_and_send_new_cv_archive(bot: TeleBot, user: User):
             )
             return
 
-    # make temp directory
-    with tempfile.TemporaryDirectory(prefix="ejf_bot_") as temp_dir_path:
+    for temp_archive_path in _form_max_size_archive(bot):
+        # show sending document
+        bot.send_chat_action(chat_id, action="upload_document")
 
-        for cv_user in User.objects.filter(cv_file_id__ne=None):
+        # send archive
+        with open(temp_archive_path, "rb") as archive:
+            message = bot.send_document(chat_id, archive)
 
-            # get file from telegram servers
-            file_info = bot.get_file(file_id=cv_user.cv_file_id)
-            file_name = cv_user.cv_file_name
-            downloaded_file = bot.download_file(file_info.file_path)
+        # update db info
+        ejf.cv_archive_file_id_list += [message.document.file_id]
 
-            # save file to temp directory
-            temp_file_path = os.path.join(temp_dir_path, file_name)
-            with open(temp_file_path, "wb") as new_file:
-                new_file.write(downloaded_file)
-
-        # make archive
-        archive_path = shutil.make_archive("CV_database", "zip", temp_dir_path)
-
-    # send archive
-    with open(archive_path, "rb") as archive:
-        message = bot.send_document(chat_id, archive)
+        # delete archive
+        os.remove(temp_archive_path)
 
     # update db info
     ejf.cv_archive_size = User.objects.filter(cv_file_id__ne=None).count()
     ejf.cv_archive_last_update = user.last_interaction_date
-    ejf.cv_archive_file_id = message.document.file_id
     ejf.save()
 
-    # delete archive
-    os.remove(archive_path)
+
+def _form_max_size_archive(bot: TeleBot, max_size=50) -> str:
+    MAXIMUM_FILE_SIZE = 5 * 1024 ** 2
+    max_size *= 1024 ** 2
+    cv_users = User.objects.filter(cv_file_id__ne=None)
+    cv_users_size = cv_users.count()
+    index = 0
+    archive_index = 0
+
+    is_continue = True
+    while index < cv_users_size:
+        current_size = 0
+        archive_index += 1
+        # make temp directory
+        with tempfile.TemporaryDirectory(prefix="ejf_bot_") as temp_dir_path:
+            while index < cv_users_size:
+                if current_size + MAXIMUM_FILE_SIZE >= max_size:
+                    break
+
+                # get current user
+                cv_user = cv_users[index]
+
+                # get file from telegram servers
+                file_info = bot.get_file(file_id=cv_user.cv_file_id)
+                file_name = cv_user.cv_file_name
+                file_size = file_info.file_size
+                downloaded_file = bot.download_file(file_info.file_path)
+
+                # save file to temp directory
+                temp_file_path = os.path.join(temp_dir_path, file_name)
+                with open(temp_file_path, "wb") as new_file:
+                    new_file.write(downloaded_file)
+
+                # count overall size
+                current_size += file_size
+
+                # go to next user
+                index += 1
+
+            # make archive
+            archive_path = shutil.make_archive(
+                f"CV_database_{archive_index}", "zip", temp_dir_path
+            )
+            yield archive_path

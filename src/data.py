@@ -156,7 +156,7 @@ class Data:
         ejf.filters_experience = ["1 рік", "3+ років"]
         ejf.filters_employment = ["Full time", "Part time"]
         ejf.admin_password = self.TEMP_ADMIN_PASSWORD
-        ejf.cv_archive_file_id = None
+        ejf.cv_archive_file_id_list = []
         ejf.cv_archive_last_update = None
         ejf.cv_archive_size = 0
         ejf.content = content
@@ -224,7 +224,7 @@ class JobFair(me.Document):
     filters_experience = me.ListField(default=list())
     filters_employment = me.ListField(default=list())
     admin_password = me.StringField()
-    cv_archive_file_id = me.StringField(default=None)
+    cv_archive_file_id_list = me.ListField(default=None)
     cv_archive_last_update = me.DateTimeField(default=None)
     cv_archive_size = me.IntField(default=0)
     content = me.ReferenceField(Content)

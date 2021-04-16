@@ -35,7 +35,6 @@ class AdminSection(Section):
             self.send_cv_archive(call=call, user=user, update=True)
 
         elif action == "CVDownloadLast":
-            self.bot.answer_callback_query(call.id)
             self.send_cv_archive(call=call, user=user, update=False)
 
         else:
@@ -77,10 +76,12 @@ class AdminSection(Section):
             utils.form_and_send_new_cv_archive(bot=self.bot, user=user)
 
         else:
-            last_cv_zip = ejf.cv_archive_file_id
+            last_cv_zip_list = ejf.cv_archive_file_id_list
 
-            if last_cv_zip:
-                self.bot.send_document(chat_id=chat_id, data=last_cv_zip)
+            if last_cv_zip_list:
+                for archive in last_cv_zip_list:
+                    self.bot.send_chat_action(chat_id, action="upload_document")
+                    self.bot.send_document(chat_id=chat_id, data=archive)
 
             else:
                 self.bot.answer_callback_query(
