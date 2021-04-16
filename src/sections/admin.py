@@ -64,7 +64,10 @@ class AdminSection(Section):
         for company in Company.objects:
             btn_text = company.name
             btn_callback = form_admin_callback(
-                action="CompanyDetails", user_id=chat_id, company_id=company.name
+                action="CompanyDetails",
+                user_id=chat_id,
+                company_id=company.name,
+                edit=True,
             )
             btn = InlineKeyboardButton(btn_text, callback_data=btn_callback)
             markup.add(btn)
