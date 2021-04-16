@@ -2,7 +2,7 @@ from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 
 from ..data import Data, User, JobFair, Company
 from .section import Section
-from ..objects import form_company_description, form_company_list_markup
+from ..objects.company import *
 
 from ..staff import utils
 
@@ -38,6 +38,9 @@ class AdminSection(Section):
         elif action == "CVDownloadLast":
             self.send_cv_archive(call=call, user=user, update=False)
 
+        elif action == "CompanyDetails":
+            self.send_company_info(call, user)
+
         else:
             self.answer_in_development(call)
 
@@ -56,16 +59,24 @@ class AdminSection(Section):
 
     def send_company_list(self, call: CallbackQuery, user: User):
         text = "Оберіть компанію для перегляду детальної інформації."
-        markup = form_company_list_markup(user)
-        self.bot.edit_message_text(chat_id=user.chat_id, text=text, reply_markup=markup)
+        company_list_markup = InlineKeyboardMarkup()
+        for company in Company.objects:
+            btn_text = company.name
+            btn_callback = self.form_admin_callback(
+                action="CompanyDetails", company_id=company.id, edit=True
+            )
+            btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+            company_list_markup.add(btn)
+        self.bot.send_message(
+            chat_id=user.chat_id, text=text, reply_markup=company_list_markup
+        )
 
-    def send_company_info(self, user_id, company_id):
-        user = User.objects.filter(user_id=user_id)
-        text = form_company_description(company_id=company_id)
+    def send_company_info(self, call: CallbackQuery, user: User):
+        company_description = form_company_description(call)
         self.bot.send_photo(
             chat_id=user.chat_id,
-            photo=company.photo_id,
-            caption=text,
+            photo=company_description[0],
+            caption=company_description[1],
             parse_mode="HTML",
         )
 
