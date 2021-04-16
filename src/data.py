@@ -156,8 +156,17 @@ class Data:
         ejf.filters_experience = ["1 рік", "3+ років"]
         ejf.filters_employment = ["Full time", "Part time"]
         ejf.admin_password = self.TEMP_ADMIN_PASSWORD
+        ejf.cv_archive_file_id = None
+        ejf.cv_archive_last_update = None
+        ejf.cv_archive_size = 0
         ejf.content = content
         ejf.save()
+
+    def get_ejf(self):
+        return JobFair.objects.first()
+
+    def get_cv_count(self):
+        return User.objects.filter(cv_file_id__ne=None).count()
 
     # HZ CHI TREBA
     def _add_test_user(
@@ -215,6 +224,9 @@ class JobFair(me.Document):
     filters_experience = me.ListField(default=list())
     filters_employment = me.ListField(default=list())
     admin_password = me.StringField()
+    cv_archive_file_id = me.StringField(default=None)
+    cv_archive_last_update = me.DateTimeField(default=None)
+    cv_archive_size = me.IntField(default=0)
     content = me.ReferenceField(Content)
 
 
@@ -226,7 +238,8 @@ class User(me.Document):
     interests = me.ListField(default=list())
     experience = me.StringField(default="")
     employment = me.StringField(default="")
-    cv_file_id = me.IntField(default=None)
+    cv_file_id = me.StringField(default=None)
+    cv_file_name = me.StringField(default=None)
     apply_counter = me.IntField(default=20)
     additional_info = me.DictField(default=None)
     registration_date = me.DateTimeField(required=True)

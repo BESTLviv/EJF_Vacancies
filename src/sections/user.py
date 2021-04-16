@@ -40,7 +40,7 @@ class UserSection(Section):
             self.send_profile_menu(user)
 
     def send_start_menu(self, user: User):
-        ejf = JobFair.objects.first()
+        ejf = self.data.get_ejf()
 
         btn_vacancy = KeyboardButton(text=self.TEXT_BUTTONS[0])
         btn_who = KeyboardButton(text=self.TEXT_BUTTONS[1])
