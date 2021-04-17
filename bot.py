@@ -42,8 +42,8 @@ def start_bot(message):
         send_welcome_message_and_start_quiz(user)
 
     # If in Job Fair mode
-    elif False:
-        pass
+    elif user.last_interaction_date < data.JOB_FAIR_END_TIME:
+        job_fair_section.send_start_menu(user)
 
     # If user is HR
     elif user.hr_status is True:
