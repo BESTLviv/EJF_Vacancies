@@ -1,11 +1,14 @@
+
 from telebot.types import CallbackQuery
 
 from ..data import (
     Data,
     User,
-    Company
+    Company,
+    Vacancy 
 )
 from .section import Section
+from ..objects import vacancy
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 class HR(Section):
@@ -19,8 +22,10 @@ class HR(Section):
         if action == "VacList":
             self.send_vacany_list(user)
 
-        elif action == "":
+        elif action == "vacInfo":
             pass
+           #show_vacancy(self=user)
+        
         
         else:
             pass
@@ -43,8 +48,19 @@ class HR(Section):
 
     
 
-    def send_vacany_list(self, user: User):
-        pass
+    def send_vacancy_list(self, user: User):
+        vac_text = 'Вакансії'
+        
+        keyboard = InlineKeyboardMarkup()
+        vacancy_list = Vacancy.objects.filter()
+        self.data.add_test_company_with_vacancies()
+        for vacancy in vacancy_list:
+           button_text = vacancy.name
+           callback = self.form_hr_callback(action="vacInfo" , vacancy_id=vacancy.id)
+           vacancy_button = InlineKeyboardButton(button_text ,  callback_data=callback)
+           keyboard.add(vacancy_button)
+        
+        self.bot.send_message(user.chat_id, vac_text, reply_markup=keyboard)
 
 
         
@@ -53,7 +69,7 @@ class HR(Section):
     def add_vacancy(self):
         pass
     
-    def show_vacancy(self):
+    def show_vacancy(self ):
         pass
 
     def show_vacancy_stats(self):
