@@ -74,16 +74,12 @@ def finish_add_vacancy(next_step: Iterator = None):
     pass
 
 
-def form_vacancy_info():
-    vacancy_photo = Vacancy.company.photo_id
-    vacancy = Vacancy.objects[0]
-    vacancy_id = vacancy.id
-    company_id = vacancy.company.id
-    # TODO should a vacancy be random from all vacancies or from exact company
+def form_vacancy_info(vacancy_id):
+    vacancy = Vacancy.objects.with_id(vacancy_id)
 
-    text = (f"{vacancy.name}\n"
+    vacancy_description = (f"{vacancy.name}\n"
             f"<b>Досвід - </b>: {vacancy.experience}\n"
             f"<b>Опис</b>: \n{vacancy.description}\n"
             f"<b>Вакансія дезактивується через: </b>: {vacancy.active_days_left} днів\n")
 
-    return vacancy_id, vacancy_photo, text, company_id
+    return vacancy_description

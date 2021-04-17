@@ -19,23 +19,23 @@ class Section:
     ################
 
     def form_admin_callback(
-        self, action, user_id="", company_id="", vacancy_id="", edit=False, delete=False
+            self, action, user_id="", company_id="", vacancy_id="", edit=False, delete=False
     ):
         assert edit is not delete
         prev_msg_action = "Delete" if delete else "Edit"
         return f"Admin;{action};{user_id};{company_id};{vacancy_id};{prev_msg_action}"
 
     def form_hr_callback(
-        self, action, user_id="", company_id="", vacancy_id="", edit=False, delete=False
+            self, action, user_id="", company_id="", vacancy_id="", edit=False, delete=False
     ):
         assert edit is not delete
         prev_msg_action = "Delete" if delete else "Edit"
         return f"HR;{action};{user_id};{company_id};{vacancy_id};{prev_msg_action}"
 
-    def form_user_callback(self, action, user_id="", edit=False, delete=False):
+    def form_user_callback(self, action, user_id="", vacancy_id="", edit=False, delete=False):
         assert edit is not delete
         prev_msg_action = "Delete" if delete else "Edit"
-        return f"User;{action};{user_id};{prev_msg_action}"
+        return f"User;{action};{user_id};{vacancy_id};{prev_msg_action}"
 
     #########
     # Buttons
@@ -65,7 +65,7 @@ class Section:
     #######
 
     def send_message(
-        self, call: CallbackQuery, text=None, photo=None, reply_markup=None
+            self, call: CallbackQuery, text=None, photo=None, reply_markup=None
     ):
         """Send next message doing something with the previous message.\n
         Every callback_data must have parameter (the last one)
@@ -81,7 +81,7 @@ class Section:
             self.bot.delete_message(chat_id, message_id)
 
         elif (
-            prev_msg_action == "Edit"
+                prev_msg_action == "Edit"
         ):  # TODO - add edit message caption (if it possible)
             try:
                 if photo is None:
