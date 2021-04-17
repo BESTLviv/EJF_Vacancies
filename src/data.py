@@ -14,6 +14,7 @@ class Data:
     )
 
     TEMP_ADMIN_PASSWORD = "admin"
+    JOB_FAIR_END_TIME = datetime(2021, 5, 20, 20, 0, 0)
 
     def __init__(self, conn_string: str, bot: TeleBot):
         self.bot = bot
@@ -148,6 +149,9 @@ class Data:
             "Шукай роботу в нас!\n\nКнопку натискай - роботу шукай!"
         )
         content.user_start_photo = self.TEST_PHOTO
+        content.user_registered_text = "Вітаємо!\nТепер реєструйся тут"
+        content.ejf_start_text = "Вітаємо вас на 14 ярмарку кар'єри від BEST Lviv"
+        content.ejf_start_photo = self.TEST_PHOTO
         content.save()
 
         # create ejf table
@@ -156,8 +160,46 @@ class Data:
         ejf.filters_experience = ["1 рік", "3+ років"]
         ejf.filters_employment = ["Full time", "Part time"]
         ejf.admin_password = self.TEMP_ADMIN_PASSWORD
+        ejf.cv_archive_file_id_list = []
+        ejf.cv_archive_last_update = None
+        ejf.cv_archive_size = 0
+        ejf.start_menu = [
+            {
+                "name": "ІЯК 🦋",
+                "text": "Інженерний Ярмарок Кар’єри - це знайомство студентів із провідними компаніями, які прагнуть почати свій кар'єрний шлях або змінити його напрям.",
+                "photo": "https://cont.ws/uploads/pic/2019/3/regnum_picture_14956618541757852_big.png",
+            },
+            {
+                "name": "Формат 💻",
+                "text": "ІЯК проходитиме ОНЛАЙН.\n19-20 травня🙌🏻\n\nНадіємось ви раді почути таку новину🔥\n\nДавайте виокремимо переваги онлайн-події:\n ✔️поспілкуватись з представниками компаній;\n ✔️познайомитись з цікавими людьми;\n ✔️отримаєте досвід написаня CV;\n ✔️не буде жодних вірусів довкола;\n\nМи потурбувались, щоб вам було комфортно. Ви зможете провести час з користю, не виходячи з дому☺️",
+                "photo": "https://cont.ws/uploads/pic/2019/3/regnum_picture_14956618541757852_big.png",
+            },
+            {
+                "name": "Компанії 💼",
+                "text": "КомпаніїКомпаніїКомпанії",
+                "photo": "https://cont.ws/uploads/pic/2019/3/regnum_picture_14956618541757852_big.png",
+            },
+            {
+                "name": "Розклад ⏰",
+                "text": "РозкладРозкладРозклад",
+                "photo": "https://cont.ws/uploads/pic/2019/3/regnum_picture_14956618541757852_big.png",
+            },
+            {
+                "name": "Зв'язок з нами ☎️",
+                "text": "Головний організатор:\nЯрослав Когуч\n+380 50 621 96 74\nYaroslavkoguch1@gmail.com\n\nВідповідальні за корпоративні зв'язки:\nНазар Тутин\n+380 73 327 62 01\nNazar.tutyn@gmail.com\n\nАнна Погиба\n+380 97 044 55 28\nAnna.pohyba@gmail.com",
+                "photo": "https://cont.ws/uploads/pic/2019/3/regnum_picture_14956618541757852_big.png",
+            },
+        ]
         ejf.content = content
+        ejf.start_datetime = datetime(2021, 5, 19, 10, 0, 0)
+        ejf.end_datetime = self.JOB_FAIR_END_TIME
         ejf.save()
+
+    def get_ejf(self):
+        return JobFair.objects.first()
+
+    def get_cv_count(self) -> int:
+        return User.objects.filter(cv_file_id__ne=None).count()
 
     # HZ CHI TREBA
     def _add_test_user(
@@ -208,6 +250,9 @@ class Data:
 class Content(me.Document):
     user_start_text = me.StringField()
     user_start_photo = me.StringField()
+    user_registered_text = me.StringField()
+    ejf_start_text = me.StringField()
+    ejf_start_photo = me.StringField()
 
 
 class JobFair(me.Document):
@@ -215,7 +260,13 @@ class JobFair(me.Document):
     filters_experience = me.ListField(default=list())
     filters_employment = me.ListField(default=list())
     admin_password = me.StringField()
+    cv_archive_file_id_list = me.ListField(default=None)
+    cv_archive_last_update = me.DateTimeField(default=None)
+    cv_archive_size = me.IntField(default=0)
+    start_menu = me.ListField(default=list())
     content = me.ReferenceField(Content)
+    start_datetime = me.DateTimeField()
+    end_datetime = me.DateTimeField()
 
 
 class User(me.Document):
@@ -226,7 +277,8 @@ class User(me.Document):
     interests = me.ListField(default=list())
     experience = me.StringField(default="")
     employment = me.StringField(default="")
-    cv_file_id = me.IntField(default=None)
+    cv_file_id = me.StringField(default=None)
+    cv_file_name = me.StringField(default=None)
     apply_counter = me.IntField(default=20)
     additional_info = me.DictField(default=None)
     registration_date = me.DateTimeField(required=True)
