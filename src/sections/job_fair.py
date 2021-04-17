@@ -32,7 +32,7 @@ class JobFairSection(Section):
 
         for btn in ejf.start_menu:
             if btn["name"] == btn_text:
-                return self.bot.send_photo(
+                self.bot.send_photo(
                     chat_id=user.chat_id, photo=btn["photo"], caption=btn["text"]
                 )
 
