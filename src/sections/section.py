@@ -92,7 +92,7 @@ class Section:
         """Send next message doing something with the previous message.\n
         Every callback_data must have parameter (the last one)
         that says what to do with previous message:
-            "Delete" or "Edit"
+            "Delete", "Edit" or "New"
         """
         chat_id = call.message.chat.id
         message_id = call.message.message_id

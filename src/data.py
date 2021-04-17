@@ -1,3 +1,6 @@
+from time import sleep
+
+import pymongo
 from telebot import TeleBot
 import mongoengine as me
 from datetime import datetime, timezone
