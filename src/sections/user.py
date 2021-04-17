@@ -21,9 +21,9 @@ class UserSection(Section):
 
     def process_callback(self, call: CallbackQuery, user: User):
         action = call.data.split(";")[1]
-        vacancy_id = call.data.split(";")[3]
 
         if action == "ApplyCV":
+            vacancy_id = call.data.split(";")[3]
             self.apply_for_vacancy(user, vacancy_id, cv=True)
 
         elif action == "Interests":
