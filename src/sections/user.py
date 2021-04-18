@@ -20,17 +20,17 @@ class UserSection(Section):
     def __init__(self, data: Data):
         super().__init__(data=data)
 
+    # def process_callback(self, call: CallbackQuery, user: User):
+    #
+    #    main_info = JobFair.objects[0]
+    #    self.all_interests, self.all_experience, self.all_employment = (
+    #        main_info.filters_interest,
+    #        main_info.filters_experience,
+    #        main_info.filters_employment,
+    #    )
+
     def process_callback(self, call: CallbackQuery, user: User):
         action = call.data.split(";")[1]
-
-        main_info = EJF.objects[0]
-        self.all_interests, self.all_experience, self.all_employment = (
-            main_info.filters_interest,
-            main_info.filters_experience,
-            main_info.filters_employment,
-        )
-
-    def process_callback(self, call: CallbackQuery, user: data.User):
         (
             action,
             is_selected,
@@ -49,7 +49,7 @@ class UserSection(Section):
             self.send_vacancy_info(user, vac, vacancy_index, call)
 
         elif action == "Interests_menu":
-            self.send_interests(user)
+            self.send_interests(call, user)
 
         elif action == "Experience_menu":
             self.send_experience(user)
@@ -58,19 +58,24 @@ class UserSection(Section):
             self.send_employment(user)
 
         elif action == "change_interest":
-            self.send_interests(user, previous_message_id=call.message.message_id)
+            self.send_interests(call, user)
 
         elif action == "change_experience":
+            is_selected = call.data.split(";")[2]
             if is_selected == "0":
-                user.experience = self.all_experience[int(experience_index)]
+                user.experience = self.data.ejf.filters_experience[
+                    int(experience_index)
+                ]
                 user.save()
-                self.send_experience(user, previous_message_id=call.message.message_id)
+                self.send_experience(call, user)
 
         elif action == "change_employment":
             if is_selected == "0":
-                user.employment = self.all_employment[int(employment_index)]
+                user.employment = self.data.ejf.filters_employment[
+                    int(employment_index)
+                ]
                 user.save()
-                self.send_employment(user, previous_message_id=call.message.message_id)
+                self.send_employment(call, user)
 
         else:
             self.answer_wrong_action(call)
@@ -79,8 +84,10 @@ class UserSection(Section):
 
         if text == self.TEXT_BUTTONS[0]:
             self.send_new_vacancy(user)
+
         elif text == self.TEXT_BUTTONS[1]:
             self.send_about_info(user)
+
         elif text == self.TEXT_BUTTONS[2]:
             self.send_profile_menu(user)
 
@@ -102,72 +109,7 @@ class UserSection(Section):
             reply_markup=markup,
         )
 
-    def send_interests(self, call: CallbackQuery, user: User):
-        all_interests = self.data.get_ejf().filters_interest
-        interests.update_interest(call, user, all_interests)
-
-        current_interests = user.interests
-        interest_markup = interests.create_interests_markup(current_interests)
-        if previous_message_id:
-            self.data.bot.edit_message_reply_markup(
-                user.chat_id,
-                message_id=previous_message_id,
-                reply_markup=interest_markup,
-            )
-        else:
-            self.data.bot.send_message(
-                user.chat_id, reply_markup=interest_markup, text="Hello"
-            )
-
-    def send_experience(self, user: data.User, previous_message_id=None):
-        current_experience = user.experience
-        experience_markup = interests.create_experience_markup(current_experience)
-        if previous_message_id:
-            self.data.bot.edit_message_reply_markup(
-                user.chat_id,
-                message_id=previous_message_id,
-                reply_markup=experience_markup,
-            )
-        else:
-            self.data.bot.send_message(
-                user.chat_id, reply_markup=experience_markup, text="woooooow"
-            )
-        pass
-
-    def send_employment(self, user: data.User, previous_message_id=None):
-        current_employment = user.employment
-        employment_markup = interests.create_employment_markup(current_employment)
-        if previous_message_id:
-            self.data.bot.edit_message_reply_markup(
-                user.chat_id,
-                message_id=previous_message_id,
-                reply_markup=employment_markup,
-            )
-        else:
-            self.data.bot.send_message(
-                user.chat_id, reply_markup=employment_markup, text="wooooooooow"
-            )
-
-    def begin_start_quiz(self):
-        pass
-
-    def send_new_vacancy(self, user: User):
-        vacancies_count = len(Vacancy.objects)
-        random_number = randint(0, vacancies_count - 1)
-        vacancies = list(Vacancy.objects)
-        random_vacancy = vacancies[random_number]
-        self.send_vacancy_info(user, random_vacancy, random_number)
-
-    def send_about_info(self, user: User):
-        self.bot.send_message(user.chat_id, text="Test")
-
-    def apply_for_vacancy(
-        self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
-    ):
-        # TODO do apply for vacancy
-        pass
-
-    def send_profile_menu(self, user: data.User):
+    def send_profile_menu(self, user: User):
         text_message = """
             Налаштуй критерії, сучка 😈.
             
@@ -207,6 +149,71 @@ class UserSection(Section):
         self.data.bot.send_message(
             user.chat_id, text=text_message, reply_markup=criteria_markup
         )
+
+    def send_interests(self, call: CallbackQuery, user: User):
+        all_interests = self.data.ejf.filters_interest
+        interests.update_interest(call, user, all_interests)
+
+        current_interests = user.interests
+        interest_markup = interests.create_interests_markup(current_interests)
+        if previous_message_id:
+            self.data.bot.edit_message_reply_markup(
+                user.chat_id,
+                message_id=previous_message_id,
+                reply_markup=interest_markup,
+            )
+        else:
+            self.data.bot.send_message(
+                user.chat_id, reply_markup=interest_markup, text="Hello"
+            )
+
+    def send_experience(self, call: CallbackQuery, user: User):
+        current_experience = user.experience
+        experience_markup = interests.create_experience_markup(current_experience)
+        if previous_message_id:
+            self.data.bot.edit_message_reply_markup(
+                user.chat_id,
+                message_id=previous_message_id,
+                reply_markup=experience_markup,
+            )
+        else:
+            self.data.bot.send_message(
+                user.chat_id, reply_markup=experience_markup, text="woooooow"
+            )
+        pass
+
+    def send_employment(self, call: CallbackQuery, user: User):
+        current_employment = user.employment
+        employment_markup = interests.create_employment_markup(current_employment)
+        if previous_message_id:
+            self.data.bot.edit_message_reply_markup(
+                user.chat_id,
+                message_id=previous_message_id,
+                reply_markup=employment_markup,
+            )
+        else:
+            self.data.bot.send_message(
+                user.chat_id, reply_markup=employment_markup, text="wooooooooow"
+            )
+
+    def begin_start_quiz(self):
+        pass
+
+    def send_new_vacancy(self, user: User):
+        vacancies_count = len(Vacancy.objects)
+        random_number = randint(0, vacancies_count - 1)
+        vacancies = list(Vacancy.objects)
+        random_vacancy = vacancies[random_number]
+        self.send_vacancy_info(user, random_vacancy, random_number)
+
+    def send_about_info(self, user: User):
+        self.bot.send_message(user.chat_id, text="Test")
+
+    def apply_for_vacancy(
+        self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
+    ):
+        # TODO do apply for vacancy
+        pass
 
     def change_account_type(self, user: User):
         pass
