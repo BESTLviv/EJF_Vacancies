@@ -19,23 +19,43 @@ class Section:
     ################
 
     def form_admin_callback(
-            self, action, user_id="", company_id="", vacancy_id="", edit=False, delete=False
+        self,
+        action,
+        user_id="",
+        company_id="",
+        vacancy_id="",
+        edit=False,
+        delete=False,
+        new=False,
     ):
-        assert edit is not delete
-        prev_msg_action = "Delete" if delete else "Edit"
+        prev_msg_action = self._get_prev_msg_action(edit, delete, new)
         return f"Admin;{action};{user_id};{company_id};{vacancy_id};{prev_msg_action}"
 
     def form_hr_callback(
-            self, action, user_id="", company_id="", vacancy_id="", edit=False, delete=False
+        self,
+        action,
+        user_id="",
+        company_id="",
+        vacancy_id="",
+        edit=False,
+        delete=False,
+        new=False,
     ):
-        assert edit is not delete
-        prev_msg_action = "Delete" if delete else "Edit"
+        prev_msg_action = self._get_prev_msg_action(edit, delete, new)
         return f"HR;{action};{user_id};{company_id};{vacancy_id};{prev_msg_action}"
 
-    def form_user_callback(self, action, user_id="", vacancy_id="", edit=False, delete=False):
-        assert edit is not delete
-        prev_msg_action = "Delete" if delete else "Edit"
+    def form_user_callback(self, action, user_id="", vacancy_id="", edit=False, delete=False,new=False):
+        prev_msg_action = self._get_prev_msg_action(edit, delete, new)
         return f"User;{action};{user_id};{vacancy_id};{prev_msg_action}"
+
+    def _get_prev_msg_action(self, edit: bool, delete: bool, new: bool) -> str:
+        assert (int(edit) + int(delete) + int(new)) == 1
+        if edit:
+            return "Edit"
+        if delete:
+            return "Delete"
+        if new:
+            return "New"
 
     #########
     # Buttons
@@ -65,7 +85,7 @@ class Section:
     #######
 
     def send_message(
-            self, call: CallbackQuery, text=None, photo=None, reply_markup=None
+        self, call: CallbackQuery, text=None, photo=None, reply_markup=None
     ):
         """Send next message doing something with the previous message.\n
         Every callback_data must have parameter (the last one)
@@ -80,9 +100,7 @@ class Section:
         if prev_msg_action == "Delete":
             self.bot.delete_message(chat_id, message_id)
 
-        elif (
-                prev_msg_action == "Edit"
-        ):  # TODO - add edit message caption (if it possible)
+        elif prev_msg_action == "Edit":
             try:
                 if photo is None:
                     if call.message.text != text:
@@ -137,14 +155,9 @@ class Section:
         if photo is None:
             self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
         else:
-            try:
-                self.bot.send_photo(
-                    chat_id=chat_id,
-                    caption=text,
-                    photo=photo,
-                    reply_markup=reply_markup,
-                )
-            except Exception:
-                self.bot.send_message(
-                    chat_id=chat_id, text=text, reply_markup=reply_markup
-                )
+            self.bot.send_photo(
+                chat_id=chat_id,
+                caption=text,
+                photo=photo,
+                reply_markup=reply_markup,
+            )
