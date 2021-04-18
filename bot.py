@@ -30,7 +30,7 @@ job_fair_section = JobFairSection(data=data)
 
 updater = Updater()
 
-# data.add_start_quiz()
+# data.add_start_quiz()аа
 
 
 @bot.message_handler(commands=["start"])
@@ -38,7 +38,7 @@ def start_bot(message):
     user = updater.update_user_interaction_time(message)
 
     # If it is the first start
-    if user.last_interaction_date == user.registration_date:
+    if user.additional_info is None:
         send_welcome_message_and_start_quiz(user)
 
     # If in Job Fair mode
@@ -120,7 +120,7 @@ def test_save_cv(message):
 
 
 def send_welcome_message_and_start_quiz(user: User):
-    welcome_text = "Привіт друже!\nНарешті ярмарок...\nЯк класно..."
+    welcome_text = data.get_ejf().content.start_text
     bot.send_photo(user.chat_id, photo=data.TEST_PHOTO, caption=welcome_text)
 
     # if Job Fair not started

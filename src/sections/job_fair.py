@@ -2,6 +2,7 @@ from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 from ..data import User, Data, JobFair
 from ..objects import quiz
 from ..sections.section import Section
+from ..staff import utils
 
 
 class JobFairSection(Section):
@@ -47,22 +48,11 @@ class JobFairSection(Section):
         return button_names
 
     def _form_markup(self) -> ReplyKeyboardMarkup:
-        def columns_generator(col=2):
-            row = []
-
-            for index, btn_name in enumerate(self.TEXT_BUTTONS, 1):
-                row += [KeyboardButton(btn_name)]
-
-                if index % col == 0:
-                    yield row
-                    row = []
-
-            if row:
-                yield row
-
         keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 
-        for btn_row in columns_generator():
+        for btn_row in utils.reply_keyboard_columns_generator(
+            btn_names_list=self.TEXT_BUTTONS, col=2
+        ):
             keyboard.row(*btn_row)
 
         return keyboard

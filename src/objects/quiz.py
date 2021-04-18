@@ -1,4 +1,6 @@
 from ..data import Data, User, Quiz, Question
+from ..staff import utils
+
 from telebot import TeleBot
 from telebot.types import Message, KeyboardButton, ReplyKeyboardMarkup
 
@@ -28,7 +30,7 @@ def start_starting_quiz(user: User, bot: TeleBot, final_func: Callable):
     quiz_iterator = iter(start_quiz_questions)
     question = next(quiz_iterator)
 
-    sleep(1)
+    sleep(4)
 
     send_question(
         user,
@@ -49,14 +51,29 @@ def send_question(
     save_func: Callable = None,
     final_func: Callable = None,
     container=None,
+    is_first_try=True,
 ):
+    """
+    :param user: user from DB
+    :param bot: telebot instance
+    :param question: question to send and process
+    :param quiz_iterator: iterator on questions
+    :param save_func: function that will save all data from quiz
+    :param final_func: function that will be called after the quiz
+    :param container: temp dictionary where all the data will be stored
+    :param is_first_try: show if it is first time to answer a question.
+        After wrong answer we do not need to repeat a question
+    """
     chat_id = user.chat_id
     text = question.message
 
     # form markup
     answer_markup = _create_answer_markup(question)
 
-    bot.send_message(chat_id, text, reply_markup=answer_markup)
+    # do not send it if answer was wrong
+    if is_first_try:
+        bot.send_message(chat_id, text, reply_markup=answer_markup)
+
     bot.register_next_step_handler_by_chat_id(
         chat_id,
         process_message,
@@ -67,12 +84,21 @@ def send_question(
         save_func=save_func,
         final_func=final_func,
         container=container,
+        is_first_try=is_first_try,
     )
 
 
 def process_message(message: Message, **kwargs):
     """
-    :params user: User object.
+    :param user: user from DB
+    :param bot: telebot instance
+    :param question: question to send and process
+    :param quiz_iterator: iterator on questions
+    :param save_func: function that will save all data from quiz
+    :param final_func: function that will be called after the quiz
+    :param container: temp dictionary where all the data will be stored
+    :param is_first_try: show if it is first time to answer a question.
+        After wrong answer we do not need to repeat a question
     """
     user = kwargs["user"]
     bot = kwargs["bot"]
@@ -81,6 +107,7 @@ def process_message(message: Message, **kwargs):
     save_func = kwargs["save_func"]
     final_func = kwargs["final_func"]
     container = kwargs["container"]
+    is_first_try = kwargs["is_first_try"]
 
     content_type = message.content_type
 
@@ -120,15 +147,23 @@ def process_message(message: Message, **kwargs):
             else:
                 raise InputException
 
+            # if answer was valid - send message about it
+            if question.correct_answer_message:
+                bot.send_message(user.chat_id, text=question.correct_answer_message)
+                sleep(0.5)
+
+            # next question
             question = next(quiz_iterator, None)
+            is_first_try = True
 
         # Wrong input type
         else:
             raise InputException
 
     except InputException:
-        print("ex")
+        is_first_try = False
         bot.send_message(user.chat_id, text=question.wrong_answer_message)
+        sleep(0.5)
 
     # do the next step
     if question:
@@ -140,6 +175,7 @@ def process_message(message: Message, **kwargs):
             save_func=save_func,
             final_func=final_func,
             container=container,
+            is_first_try=is_first_try,
         )
     # if questions ended
     else:
@@ -156,9 +192,10 @@ def _create_answer_markup(question: Question) -> ReplyKeyboardMarkup:
     answer_markup = ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
 
     if question.input_type == "text":
-        for button in question.buttons:
-            answer_btn = KeyboardButton(text=button)
-            answer_markup.add(answer_btn)
+        for row in utils.reply_keyboard_columns_generator(
+            list(question.buttons), col=2
+        ):
+            answer_markup.add(*row)
 
     elif question.input_type == "contact":
         answer_btn = KeyboardButton(text=question.buttons[0], request_contact=True)

@@ -1,4 +1,4 @@
-from telebot.types import Message
+from telebot.types import Message, KeyboardButton
 from telebot import TeleBot
 
 from ..data import User, JobFair
@@ -96,3 +96,17 @@ def _form_max_size_archive(bot: TeleBot, max_size=50) -> str:
                 f"CV_database_{archive_index}", "zip", temp_dir_path
             )
             yield archive_path
+
+
+def reply_keyboard_columns_generator(btn_names_list: list, col=2):
+    row = []
+
+    for index, btn_name in enumerate(btn_names_list, 1):
+        row += [KeyboardButton(btn_name)]
+
+        if index % col == 0:
+            yield row
+            row = []
+
+    if row:
+        yield row
