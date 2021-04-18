@@ -95,7 +95,6 @@ class UserSection(Section):
         btn_callback = self.form_user_callback(action="ApplyCV", user_id=chat_id, vacancy_id=vacancy_id, edit=True)
         btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
         apply_markup.add(btn)
-        self.bot.send_photo(chat_id=user.chat_id, photo=vacancy_photo, caption=vacancy_description,
-                            parse_mode="HTML")
 
-        self.bot.send_photo(chat_id=user.chat_id, photo=vacancy_photo, caption=vacancy_description)
+        self.bot.send_photo(chat_id=user.chat_id, photo=vacancy_photo, caption=vacancy_description,
+                            reply_markup=apply_markup)
