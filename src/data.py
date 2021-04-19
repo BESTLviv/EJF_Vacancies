@@ -26,9 +26,9 @@ class Data:
         # remove later
         self.add_start_quiz()
 
-        for user in User.objects:
-            user.additional_info = None
-            user.save()
+        # for user in User.objects:
+        #    user.additional_info = None
+        #    user.save()
 
     def add_test_company_with_vacancies(self, vacancies_number=2):
 
