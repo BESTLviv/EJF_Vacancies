@@ -14,7 +14,7 @@ class JobFairSection(Section):
     def __init__(self, data: Data):
         super().__init__(data)
 
-        self.TEXT_BUTTONS = self._get_start_button_names(ejf)
+        self.TEXT_BUTTONS = self._get_start_button_names()
 
     def process_text(self, text, user: User):
         self.send_button_content(user, text)
@@ -54,7 +54,9 @@ class JobFairSection(Section):
                     reply_markup=markup,
                 )
 
-    def _get_start_button_names(self, ejf: JobFair) -> list:
+    def _get_start_button_names(self, ejf: JobFair = None) -> list:
+        if ejf is None:
+            ejf = self.data.get_ejf()
 
         button_names = list()
 
