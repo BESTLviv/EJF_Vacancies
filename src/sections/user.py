@@ -73,7 +73,9 @@ class UserSection(Section):
     def send_about_info(self, user: User):
         self.bot.send_message(user.chat_id, text="Test")
 
-    def apply_for_vacancy(self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False):
+    def apply_for_vacancy(
+        self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
+    ):
         # TODO do apply for vacancy
         pass
 
@@ -92,9 +94,15 @@ class UserSection(Section):
         # apply with CV button
         apply_markup = InlineKeyboardMarkup()
         btn_text = "Податися за допомогою CV"
-        btn_callback = self.form_user_callback(action="ApplyCV", user_id=chat_id, vacancy_id=vacancy_id, edit=True)
+        btn_callback = self.form_user_callback(
+            action="ApplyCV", user_id=chat_id, vacancy_id=vacancy_id, edit=True
+        )
         btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
         apply_markup.add(btn)
 
-        self.bot.send_photo(chat_id=user.chat_id, photo=vacancy_photo, caption=vacancy_description,
-                            reply_markup=apply_markup)
+        self.bot.send_photo(
+            chat_id=user.chat_id,
+            photo=vacancy_photo,
+            caption=vacancy_description,
+            reply_markup=apply_markup,
+        )

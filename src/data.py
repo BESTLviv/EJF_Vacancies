@@ -30,14 +30,14 @@ class Data:
         #    user.additional_info = None
         #    user.save()
 
-    def add_test_company_with_vacancies(self, vacancies_number=2):
+    def add_test_company_with_vacancies(self, user, vacancies_number=2):
 
         # company
         name = self._generate_string()
         photo_id = self.TEST_PHOTO
         description = self._generate_string(long=True)
         vacancy_counter = 20  # ?
-        HR = None
+        HR = user
         token = self._generate_string()
         registration_date = datetime.now()
 
