@@ -13,6 +13,8 @@ from src.objects import quiz
 import configparser
 from telebot import TeleBot, logger
 
+import test_bot
+
 
 config = configparser.ConfigParser()
 config.read("Settings.ini")
@@ -89,11 +91,11 @@ def handle_text_buttons(message):
         elif message_text in job_fair_section.TEXT_BUTTONS:
             job_fair_section.process_text(message_text, user)
 
-        elif message_text == data.TEMP_ADMIN_PASSWORD:
+        elif message_text == data.ADMIN_PASSWORD:
             admin_section.send_admin_menu(user=user)
 
         elif message_text.startswith("ejf__"):
-            utils.process_tests_text(bot, user, message_text)
+            test_bot.process_tests_text(bot, user, data, message_text)
 
         else:
             pass  # answer user that it was invalid input (in utils.py maybe)
@@ -129,8 +131,8 @@ def send_welcome_message_and_start_quiz(user: User):
     welcome_text = data.get_ejf().content.start_text
     bot.send_photo(user.chat_id, photo=data.TEST_PHOTO, caption=welcome_text)
 
-    # if Job Fair not started
-    if True:
+    # if Job Fair not ended
+    if user.last_interaction_date < data.JOB_FAIR_END_TIME:
         final_func = job_fair_section.send_start_menu
 
     # if Job Fair ended

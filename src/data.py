@@ -11,7 +11,6 @@ class Data:
 
     TEST_PHOTO = "https://i.ibb.co/0Gv4JyW/photo-2021-04-16-12-48-15.jpg"
 
-    TEMP_ADMIN_PASSWORD = "admin"
     JOB_FAIR_END_TIME = datetime(2021, 5, 20, 20, 0, 0)
 
     def __init__(self, conn_string: str, bot: TeleBot):
@@ -20,8 +19,15 @@ class Data:
         me.connect(host=conn_string)
         print("connection success ")
 
-        self.reinit_ejf_table()
-        print("ejf and content tables have been reinitialized")
+        # if there is no ejf table in DB - then create it
+        if len(JobFair.objects) == 0:
+            self.reinit_ejf_table()
+            print("ejf and content tables have been initialized")
+        # if there was table already
+        else:
+            self.update_ejf_table()
+
+        self.ADMIN_PASSWORD = self.get_ejf().admin_password
 
         # remove later
         self.add_start_quiz()
@@ -220,7 +226,7 @@ class Data:
         ejf.filters_interest = ["Full Stack", "Front End", "Data Science"]
         ejf.filters_experience = ["1 рік", "3+ років"]
         ejf.filters_employment = ["Full time", "Part time"]
-        ejf.admin_password = self.TEMP_ADMIN_PASSWORD
+        ejf.admin_password = "admin"
         ejf.cv_archive_file_id_list = []
         ejf.cv_archive_last_update = None
         ejf.cv_archive_size = 0
@@ -280,6 +286,15 @@ class Data:
         ejf.content = content
         ejf.start_datetime = datetime(2021, 5, 19, 10, 0, 0)
         ejf.end_datetime = self.JOB_FAIR_END_TIME
+        ejf.save()
+
+    def update_ejf_table(self):
+        ejf = self.get_ejf()
+
+        for btn in ejf.start_menu:
+            btn.name = btn.name.replace("\\n", "\n")
+            btn.text = btn.text.replace("\\n", "\n")
+
         ejf.save()
 
     def get_ejf(self):

@@ -14,13 +14,14 @@ class JobFairSection(Section):
     def __init__(self, data: Data):
         super().__init__(data)
 
-        self.TEXT_BUTTONS = self._get_start_button_names()
+        self.TEXT_BUTTONS = self._get_start_button_names(ejf)
 
     def process_text(self, text, user: User):
         self.send_button_content(user, text)
 
     def send_start_menu(self, user: User):
         ejf = self.data.get_ejf()
+        self.TEXT_BUTTONS = self._get_start_button_names(ejf)
 
         start_message = ejf.content.ejf_start_text
         start_photo = ejf.content.ejf_start_photo
@@ -53,8 +54,7 @@ class JobFairSection(Section):
                     reply_markup=markup,
                 )
 
-    def _get_start_button_names(self) -> list:
-        ejf = self.data.get_ejf()
+    def _get_start_button_names(self, ejf: JobFair) -> list:
 
         button_names = list()
 

@@ -11,9 +11,6 @@ import os
 from datetime import datetime
 
 
-test_commands = {"help": 1}
-
-
 def get_user_type(message: Message):
     chat_id = message.chat.id
 
@@ -124,10 +121,3 @@ def delete_message(bot: TeleBot, call: CallbackQuery):
 
     except:
         bot.answer_callback_query(call.id, text="Щоб продовжити натискай на /start")
-
-
-def process_tests_text(bot: TeleBot, user: User, text: str):
-    test_action = text.split("__")[-1]
-
-    if test_action == "help":
-        pass
