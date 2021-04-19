@@ -2,7 +2,7 @@ from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 
 from ..data import Data, User, JobFair, Company
 from .section import Section
-from ..objects.company import *
+from ..objects import company
 
 from ..staff import utils
 
@@ -59,26 +59,22 @@ class AdminSection(Section):
 
     def send_company_list(self, call: CallbackQuery, user: User):
         text = "Оберіть компанію для перегляду детальної інформації."
+
         company_list_markup = InlineKeyboardMarkup()
         for company in Company.objects:
             btn_text = company.name
             btn_callback = self.form_admin_callback(
-                action="CompanyDetails", company_id=company.id, edit=True
+                action="CompanyDetails", company_id=company.id, new=True
             )
             btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
             company_list_markup.add(btn)
-        self.bot.send_message(
-            chat_id=user.chat_id, text=text, reply_markup=company_list_markup
-        )
+
+        self.send_message(call, text, reply_markup=company_list_markup)
 
     def send_company_info(self, call: CallbackQuery, user: User):
-        company_description = form_company_description(call)
-        self.bot.send_photo(
-            chat_id=user.chat_id,
-            photo=company_description[0],
-            caption=company_description[1],
-            parse_mode="HTML",
-        )
+        company_photo, company_description = company.form_company_description(call)
+
+        self.send_message(call, company_description, photo=company_photo)
 
     def send_mailing_menu(self, call: CallbackQuery, user: User):
         self.answer_in_development(call)
