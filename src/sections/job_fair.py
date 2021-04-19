@@ -1,4 +1,9 @@
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+from telebot.types import (
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 from ..data import User, Data, JobFair
 from ..objects import quiz
 from ..sections.section import Section
@@ -32,9 +37,20 @@ class JobFairSection(Section):
         ejf = self.data.get_ejf()
 
         for btn in ejf.start_menu:
-            if btn["name"] == btn_text:
+            if btn.name == btn_text:
+                # if content have link button
+                markup = InlineKeyboardMarkup()
+                if btn.url_link:
+                    url_button = InlineKeyboardButton(
+                        text=btn.url_text, url=btn.url_link
+                    )
+                    markup.add(url_button)
+
                 self.bot.send_photo(
-                    chat_id=user.chat_id, photo=btn["photo"], caption=btn["text"]
+                    chat_id=user.chat_id,
+                    photo=btn.photo,
+                    caption=btn.text,
+                    reply_markup=markup,
                 )
 
     def _get_start_button_names(self) -> list:
@@ -43,7 +59,7 @@ class JobFairSection(Section):
         button_names = list()
 
         for button in ejf.start_menu:
-            button_names += [button["name"]]
+            button_names += [button.name]
 
         return button_names
 
