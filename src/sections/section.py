@@ -44,11 +44,9 @@ class Section:
         prev_msg_action = self._get_prev_msg_action(edit, delete, new)
         return f"HR;{action};{user_id};{company_id};{vacancy_id};{prev_msg_action}"
 
-    def form_user_callback(
-        self, action, user_id="", edit=False, delete=False, new=False
-    ):
+    def form_user_callback(self, action, user_id="", vacancy_id="", edit=False, delete=False,new=False):
         prev_msg_action = self._get_prev_msg_action(edit, delete, new)
-        return f"User;{action};{user_id};{prev_msg_action}"
+        return f"User;{action};{user_id};{vacancy_id};{prev_msg_action}"
 
     def _get_prev_msg_action(self, edit: bool, delete: bool, new: bool) -> str:
         assert (int(edit) + int(delete) + int(new)) == 1
