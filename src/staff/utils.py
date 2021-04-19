@@ -1,4 +1,4 @@
-from telebot.types import Message, KeyboardButton
+from telebot.types import Message, KeyboardButton, CallbackQuery
 from telebot import TeleBot
 
 from ..data import User, JobFair
@@ -9,6 +9,9 @@ import tempfile
 import shutil
 import os
 from datetime import datetime
+
+
+test_commands = {"help": 1}
 
 
 def get_user_type(message: Message):
@@ -110,3 +113,21 @@ def reply_keyboard_columns_generator(btn_names_list: list, col=2):
 
     if row:
         yield row
+
+
+def delete_message(bot: TeleBot, call: CallbackQuery):
+    chat_id = call.message.chat_id
+    message_id = call.message.message_id
+
+    try:
+        bot.delete_message(chat_id, message_id)
+
+    except:
+        bot.answer_callback_query(call.id, text="Щоб продовжити натискай на /start")
+
+
+def process_tests_text(bot: TeleBot, user: User, text: str):
+    test_action = text.split("__")[-1]
+
+    if test_action == "help":
+        pass

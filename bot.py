@@ -69,6 +69,9 @@ def handle_callback_query(call):
         elif section == "Admin":
             admin_section.process_callback(call=call, user=user)
 
+        elif section == "DELETE":
+            utils.delete_message(bot=bot, call=call)
+
     except:
         pass
 
@@ -88,6 +91,9 @@ def handle_text_buttons(message):
 
         elif message_text == data.TEMP_ADMIN_PASSWORD:
             admin_section.send_admin_menu(user=user)
+
+        elif message_text.startswith("ejf__"):
+            utils.process_tests_text(bot, user, message_text)
 
         else:
             pass  # answer user that it was invalid input (in utils.py maybe)
