@@ -207,6 +207,7 @@ class AdminSection(Section):
 
     def send_message_to_auditory(
         self,
+        admin_chat_id,
         text: str,
         photo: str,
         markup: InlineKeyboardMarkup,
@@ -217,6 +218,7 @@ class AdminSection(Section):
         if auditory == "all":
             users = User.objects.filter(is_blocked=False)
 
+            counter = 0
             for user in users:
                 try:
                     if photo:
@@ -225,12 +227,18 @@ class AdminSection(Section):
                         )
                     else:
                         self.bot.send_message(user.chat_id, text, reply_markup=markup)
+                    counter += 1
                 except Exception as e:
-                    logger.error(
+                    err_text = (
                         f"User {user.username} {user.chat_id} didn't receive message"
                     )
+                    logger.error(err_text)
+                    self.bot.send_message(chat_id=admin_chat_id, text=err_text)
                     user.is_blocked = True
                     user.save()
+
+        success_text = f"Повідомлення відправлено {counter} користувачам"
+        self.bot.send_message(chat_id=admin_chat_id, text=success_text)
 
     def _process_mail_users(self, message, **kwargs):
         """
@@ -268,7 +276,12 @@ class AdminSection(Section):
             markup.add(btn)
 
         self.send_message_to_auditory(
-            text=text, photo=photo, markup=markup, user=user, auditory=auditory
+            admin_chat_id=message.chat.id,
+            text=text,
+            photo=photo,
+            markup=markup,
+            user=user,
+            auditory=auditory,
         )
 
     def _form_admin_menu_markup(self) -> InlineKeyboardMarkup:
