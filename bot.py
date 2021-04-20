@@ -11,19 +11,28 @@ from src.staff import utils
 from src.objects import quiz
 
 import configparser
-from telebot import TeleBot, logger
+from telebot import TeleBot
 
 import test_bot
 
+import logging
+
+logger = logging.Logger("Main")
+
+logger.info("Initializing settings")
 
 config = configparser.ConfigParser()
 config.read("Settings.ini")
+
+logger.info("Settings read")
 
 API_TOKEN = config["TG"]["token"]
 CONNECTION_STRING = config["Mongo"]["db"]
 
 bot = TeleBot(API_TOKEN, parse_mode="HTML")
 data = Data(conn_string=CONNECTION_STRING, bot=bot)
+
+logger.info("Connected to db")
 
 admin_section = AdminSection(data=data)
 hr_section = HRSection(data=data)
