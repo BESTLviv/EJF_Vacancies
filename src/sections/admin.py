@@ -1,6 +1,7 @@
+from src.objects import vacancy
 from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
-from ..data import Data, User, JobFair, Company
+from ..data import Data, User, JobFair, Company, Vacancy
 from .section import Section
 from ..objects import company
 
@@ -84,7 +85,20 @@ class AdminSection(Section):
         self.send_message(call, company_description, photo=company_photo, reply_markup=markup)
 
     def send_vacancy_list(self, call: CallbackQuery, user: User):
-        self.answer_in_development(call)
+        #self.answer_in_development(call)
+        vac_text = "Компанії"
+        vacancy_list_markup = InlineKeyboardMarkup()
+        vacancy_list = Vacancy.objects.filter()
+        self.data.add_test_company_with_vacancies()
+        for vacancy in vacancy_list:
+            vac_text = vacancy.name
+            vac_callback = self.form_admin_callback(action = "VacancyInfo" , vacancy_id= vacancy.id)
+            vac_button = InlineKeyboardButton(text = vac_text , callback_data= vac_callback)
+            vacancy_list_markup.add(vac_button)
+        
+        self.send_message(call , vac_text , reply_markup = vacancy_list_markup )
+
+            
 
     def send_company_key(self, call: CallbackQuery, user: User):
         self.answer_in_development(call)
