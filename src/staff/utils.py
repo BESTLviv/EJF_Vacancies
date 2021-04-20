@@ -121,3 +121,15 @@ def delete_message(bot: TeleBot, call: CallbackQuery):
 
     except:
         bot.answer_callback_query(call.id, text="Щоб продовжити натискай на /start")
+
+
+#
+# def process_message_input(message, **kwargs):
+#    """
+#    :param root_func
+#    :param next_func
+#    :param next_func_arguments
+#    """
+#    root_func = kwargs["root_func"]
+#    next_func = kwargs["next_func"]
+#    next_func_arguments = kwargs["next_func_arguments"]

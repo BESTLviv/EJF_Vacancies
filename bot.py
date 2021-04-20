@@ -145,8 +145,10 @@ def test_save_cv(message):
 
 
 def send_welcome_message_and_start_quiz(user: User):
-    welcome_text = data.get_ejf().content.start_text
-    bot.send_photo(user.chat_id, photo=data.TEST_PHOTO, caption=welcome_text)
+    ejf = data.get_ejf()
+    welcome_text = ejf.content.start_text
+    welcome_photo = ejf.content.start_photo
+    bot.send_photo(user.chat_id, photo=welcome_photo, caption=welcome_text)
 
     # if Job Fair not ended
     if user.last_interaction_date < data.JOB_FAIR_END_TIME:
