@@ -301,10 +301,11 @@ class Data:
 
         # form paragraphs in content
         content = ejf.content
-        content.start_text = content.start_text.replace("\\n", "\n")
-        content.user_start_text = content.user_start_text.replace("\\n", "\n")
-        content.ejf_start_text = content.ejf_start_text.replace("\\n", "\n")
-
+        ejf.content.start_text = content.start_text.replace("\\n", "\n")
+        ejf.content.user_start_text = content.user_start_text.replace("\\n", "\n")
+        ejf.content.ejf_start_text = content.ejf_start_text.replace("\\n", "\n")
+        
+        ejf.content.save()
         ejf.save()
 
     def update_quiz_table(self):

@@ -183,6 +183,7 @@ class AdminSection(Section):
         text = str()
         photo = str()
         url = str()
+        markup = InlineKeyboardMarkup()
 
         if message.content_type == "text":
             text = message.text
@@ -196,16 +197,19 @@ class AdminSection(Section):
             return
 
         # find if there is link in text and form markup
-        text_splitted = message.text.split("\n")
-        last_row = text_splitted[-1]
-        markup = InlineKeyboardMarkup()
-        if "https" in last_row and "->" in last_row:
-            text = text_splitted[:-1].join("")
+        try:
+            if text:
+                text_splitted = message.text.split("\n")
+                last_row = text_splitted[-1]
+                if "https" in last_row and "->" in last_row:
+                    text = text_splitted[:-1].join("")
 
-            # form button
-            url, btn_text = last_row.split("->")
-            btn = InlineKeyboardButton(text=btn_text, url=url)
-            markup.add(btn)
+                    # form button
+                    url, btn_text = last_row.split("->")
+                    btn = InlineKeyboardButton(text=btn_text, url=url)
+                    markup.add(btn)
+        except Exception as e:
+            print(f"{e} during mailing")
 
         self.send_message_to_auditory(
             admin_chat_id=message.chat.id,
