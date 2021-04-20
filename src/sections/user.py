@@ -11,6 +11,7 @@ from ..objects import quiz
 from .section import Section
 from ..objects import interests
 from ..objects import vacancy
+from random import randint
 
 
 class UserSection(Section):
@@ -68,13 +69,18 @@ class UserSection(Section):
         pass
 
     def send_new_vacancy(self, user: User):
-        self.bot.send_message(user.chat_id, text="Test")
+        vacancies_count = len(Vacancy.objects)
+        random_number = randint(0, vacancies_count - 1)
+        vacancies = list(Vacancy.objects)
+        random_vacancy = vacancies[random_number]
+        # TODO
+        self.send_vacancy_info()
 
     def send_about_info(self, user: User):
         self.bot.send_message(user.chat_id, text="Test")
 
     def apply_for_vacancy(
-        self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
+            self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
     ):
         # TODO do apply for vacancy
         pass
@@ -85,17 +91,33 @@ class UserSection(Section):
     def change_account_type(self, user: User):
         pass
 
-    def send_vacancy_info(self, vacancy_id, user: User):
+    def send_vacancy_info(self, user: User, vacancy_id):
         chat_id = user.chat_id
-
         vacancy_description = vacancy.form_vacancy_info(vacancy_id)
         vacancy_photo = Vacancy.objects.with_id(vacancy_id).company.photo_id
-
         # apply with CV button
         apply_markup = InlineKeyboardMarkup()
         btn_text = "Податися за допомогою CV"
         btn_callback = self.form_user_callback(
             action="ApplyCV", user_id=chat_id, vacancy_id=vacancy_id, edit=True
+        )
+        btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        apply_markup.add(btn)
+
+        # previous vacancy button
+        apply_markup = InlineKeyboardMarkup()
+        btn_text = "Попередня вакансія"
+        btn_callback = self.form_user_callback(
+            action="PreviousVacancy", user_id=chat_id, vacancy_id=vacancy_id, edit=True
+        )
+        btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        apply_markup.add(btn)
+
+        # next vacancy button
+        apply_markup = InlineKeyboardMarkup()
+        btn_text = "Наступна вакансія"
+        btn_callback = self.form_user_callback(
+            action="NextVacancy", user_id=chat_id, vacancy_id=vacancy_id, edit=True
         )
         btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
         apply_markup.add(btn)
