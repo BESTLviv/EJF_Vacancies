@@ -1,4 +1,5 @@
 from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from telebot import logger
 
 from ..data import Data, User, JobFair, Company
 from .section import Section
@@ -24,6 +25,9 @@ class AdminSection(Section):
 
         elif action == "SendMessageMenu":
             self.send_mailing_menu(call, user)
+
+        elif action == "MailAll":
+            self.mail_all(user)
 
         elif action == "Statistic":
             self.send_statistic(call, user)
@@ -77,7 +81,21 @@ class AdminSection(Section):
         self.send_message(call, company_description, photo=company_photo)
 
     def send_mailing_menu(self, call: CallbackQuery, user: User):
-        self.answer_in_development(call)
+        chat_id = user.chat_id
+
+        # form text
+        user_count = User.objects.count()
+        user_registered_count = User.objects.filter(additional_info__ne=None).count()
+        user_not_blocked_count = User.objects.filter(is_blocked=False).count()
+        text = (
+            f"Всього стартануло бот - <b>{user_count}</b>\n"
+            f"Пройшло реєстрацію - <b>{user_registered_count}</b>\n"
+            f"Всього не заблокованих користувачів - <b>{user_not_blocked_count}</b>"
+        )
+
+        markup = self._form_mailing_markup()
+
+        self.send_message(call, text, reply_markup=markup)
 
     def send_statistic(self, call: CallbackQuery, user: User):
         self.answer_in_development(call)
@@ -107,6 +125,83 @@ class AdminSection(Section):
                 self.bot.answer_callback_query(
                     call.id, text="Архів ні разу не оновлювався!"
                 )
+
+    def mail_all(self, user: User):
+        text = (
+            "Надішли повідомлення яке потрібно розіслати всім\n\n"
+            "Якщо потрібно вставити кнопку-посилання, то в останньому рядку тексту напиши посилання формату <b>https... ->btn_name</b>"
+        )
+
+        self.bot.send_message(user.chat_id, text=text)
+        self.bot.register_next_step_handler_by_chat_id(
+            user.chat_id, self._process_mail_users, auditory="all", user=user
+        )
+
+    def send_message_to_auditory(
+        self,
+        text: str,
+        photo: str,
+        markup: InlineKeyboardMarkup,
+        user: User,
+        auditory="all",
+    ):
+
+        if auditory == "all":
+            users = User.objects.filter(is_blocked=False)
+
+            for user in users:
+                try:
+                    if photo:
+                        self.bot.send_photo(
+                            user.chat_id, caption=text, reply_markup=markup
+                        )
+                    else:
+                        self.bot.send_message(user.chat_id, text, reply_markup=markup)
+                except Exception as e:
+                    logger.error(
+                        f"User {user.username} {user.chat_id} didn't receive message"
+                    )
+                    user.is_blocked = True
+                    user.save()
+
+    def _process_mail_users(self, message, **kwargs):
+        """
+        :param auditory: "all" to mail all, else set it to one of auditory type from ejf_table
+        :param user: user object from db
+        """
+        auditory = kwargs["auditory"]
+        user = kwargs["user"]
+
+        text = str()
+        photo = str()
+        url = str()
+
+        if message.content_type == "text":
+            text = message.text
+
+        elif message.content_type == "photo":
+            text = message.caption
+            photo = message.photo[0].file_id
+
+        else:
+            self.mail_all(user)
+            return
+
+        # find if there is link in text and form markup
+        text_splitted = message.text.split("\n")
+        last_row = text_splitted[-1]
+        markup = InlineKeyboardMarkup()
+        if "https" in last_row and "->" in last_row:
+            text = text_splitted[:-1].join("")
+
+            # form button
+            url, btn_text = last_row.split("->")
+            btn = InlineKeyboardButton(text=btn_text, url=url)
+            markup.add(btn)
+
+        self.send_message_to_auditory(
+            text=text, photo=photo, markup=markup, user=user, auditory=auditory
+        )
 
     def _form_admin_menu_markup(self) -> InlineKeyboardMarkup:
 
@@ -172,3 +267,19 @@ class AdminSection(Section):
         cv_menu_markup.add(back_btn)
 
         return cv_menu_markup
+
+    def _form_mailing_markup(self) -> InlineKeyboardMarkup:
+        markup = InlineKeyboardMarkup()
+
+        # Mail all auditory
+        btn_text = "Розсилка на всю аудиторію"
+        btn_callback = self.form_admin_callback(action="MailAll", edit=True)
+        btn_mail_all = InlineKeyboardButton(btn_text, btn_callback)
+        markup.add(btn_mail_all)
+
+        # Back button
+        btn_callback = self.form_admin_callback(action="AdminMenu", edit=True)
+        back_btn = self.create_back_button(btn_callback)
+        markup.add(back_btn)
+
+        return markup
