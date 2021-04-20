@@ -47,6 +47,12 @@ class AdminSection(Section):
         elif action == "CompanyKey":
             self.send_company_key(call, user)
 
+        elif action == "VacancyInfo":
+            self.send_vacancy_info(call, user)
+
+        elif action == "DeleteVacancy":
+            self.delete_vacancy(call, user)
+
         else:
             self.answer_in_development(call)
 
@@ -85,6 +91,12 @@ class AdminSection(Section):
 
     def send_vacancy_list(self, call: CallbackQuery, user: User):
         self.answer_in_development(call)
+
+    def send_vacancy_info(self, call: CallbackQuery, user: User):
+        vacancy_description = company.form_vacancy_description(call)
+        markup = self._form_vacancy_menu_markup()
+
+        self.send_message(call, vacancy_description, reply_markup=markup)
 
     def send_company_key(self, call: CallbackQuery, user: User):
         self.answer_in_development(call)
@@ -203,3 +215,27 @@ class AdminSection(Section):
         company_menu_markup.add(company_key_btn)
 
         return company_menu_markup
+
+    def _form_vacancy_menu_markup(self) -> InlineKeyboardMarkup:
+
+        vacancy_menu_markup = InlineKeyboardMarkup()
+
+        # delete vacancy
+        btn_text = "Видалити вакансію"
+        btn_callback = self.form_admin_callback(action="DeleteVacancy", edit=True)
+        delete_vacancy_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        company_menu_markup.add(delete_vacancy_btn)
+
+        # on\off
+        btn_text = "Вкл\Викл"
+        btn_callback = self.form_admin_callback(action="OnOff", edit=True)
+        on_off_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        company_menu_markup.add(on_off_btn)
+
+        # send statistics
+        btn_text = "Статистика"
+        btn_callback = self.form_admin_callback(action="VacancyStatistics", edit=True)
+        vacancy_statistics_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        company_menu_markup.add(vacancy_statistics_btn)
+
+        return vacancy_menu_markup
