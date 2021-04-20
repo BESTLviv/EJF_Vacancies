@@ -33,6 +33,9 @@ class Data:
         # if there is no quiz table in DB - then create it
         if len(Quiz.objects) == 0:
             self.add_start_quiz()
+        # otherwise update it
+        else:
+            self.update_quiz_table()
 
         # for user in User.objects:
         #    user.additional_info = None
@@ -291,11 +294,22 @@ class Data:
     def update_ejf_table(self):
         ejf = self.get_ejf()
 
+        # form paragraphs in ejf menu
         for btn in ejf.start_menu:
             btn.name = btn.name.replace("\\n", "\n")
             btn.text = btn.text.replace("\\n", "\n")
 
         ejf.save()
+
+    def update_quiz_table(self):
+        quizes = Quiz.objects
+
+        # form paragraphs in questions
+        for quiz in quizes:
+            for question in quiz.questions:
+                question.message = question.message.replace("\\n", "\n")
+
+            quiz.save()
 
     def get_ejf(self):
         return JobFair.objects.first()
