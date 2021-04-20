@@ -148,7 +148,7 @@ class AdminSection(Section):
     ):
 
         if auditory == "all":
-            users = User.objects.filter(is_blocked=False)
+            users = User.objects.filter(additional_info__ne=None)
 
             counter = 0
             for user in users:
