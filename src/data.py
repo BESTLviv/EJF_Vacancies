@@ -30,7 +30,9 @@ class Data:
         self.ADMIN_PASSWORD = self.get_ejf().admin_password
 
         # remove later
-        self.add_start_quiz()
+        # if there is no quiz table in DB - then create it
+        if len(Quiz.objects) == 0:
+            self.add_start_quiz()
 
         # for user in User.objects:
         #    user.additional_info = None
@@ -87,8 +89,6 @@ class Data:
             ).save()
 
     def add_start_quiz(self):
-        # delete collections
-        Quiz.objects.delete()
 
         quiz = Quiz(name="StartQuiz", is_required=True)
 
