@@ -11,13 +11,13 @@ from src.staff import utils
 from src.objects import quiz
 
 import configparser
-from telebot import TeleBot
+from telebot import TeleBot, logger
 
 import test_bot
 
 import logging
 
-logger = logging.Logger("Main")
+logger.setLevel(logging.INFO)
 
 logger.info("Initializing settings")
 
