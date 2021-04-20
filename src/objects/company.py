@@ -19,8 +19,9 @@ def form_company_description(call) -> tuple:
         f"<b>Про компанію: </b> {company.description}\n"
     )
     # TODO add HR field
-    
+
     return company_id, company_photo, company_description
+
 
 def form_vacancy_info(vacancy_id) -> str:
     vacancy = Vacancy.objects.with_id(vacancy_id)
