@@ -299,6 +299,12 @@ class Data:
             btn.name = btn.name.replace("\\n", "\n")
             btn.text = btn.text.replace("\\n", "\n")
 
+        # form paragraphs in content
+        content = ejf.content
+        content.start_text = content.start_text.replace("\\n", "\n")
+        content.user_start_text = content.user_start_text.replace("\\n", "\n")
+        content.ejf_start_text = content.ejf_start_text.replace("\\n", "\n")
+
         ejf.save()
 
     def update_quiz_table(self):
@@ -316,6 +322,9 @@ class Data:
 
     def get_cv_count(self) -> int:
         return User.objects.filter(cv_file_id__ne=None).count()
+
+    def update_deleted_users(self):
+        pass
 
     # HZ CHI TREBA
     def _add_test_user(
@@ -365,6 +374,7 @@ class Data:
 
 class Content(me.Document):
     start_text = me.StringField()
+    start_photo = me.StringField()
     user_start_text = me.StringField()
     user_start_photo = me.StringField()
     ejf_start_text = me.StringField()
@@ -409,6 +419,7 @@ class User(me.Document):
     last_update_date = me.DateTimeField(required=True)
     last_interaction_date = me.DateTimeField(required=True)
     hr_status = me.BooleanField(default=False)
+    is_blocked = me.BooleanField(default=False)
 
 
 class Company(me.Document):
