@@ -7,7 +7,7 @@ from src.data import User, JobFair, Data
 help_msg = (
     "TEST COMMANDS HELP\n\n"
     "<b>ejf__help</b> - for help message\n"
-    "<b>ejf__fullstart</b> - full start of bot (with start message and quiz)"
+    "<b>ejf__resetquiz</b> - full start of bot (with start message and quiz)"
 )
 
 
