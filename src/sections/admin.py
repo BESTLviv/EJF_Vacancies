@@ -41,6 +41,12 @@ class AdminSection(Section):
         elif action == "CompanyDetails":
             self.send_company_info(call, user)
 
+        elif action == "VacancyList":
+            self.send_vacancy_list(call, user)
+
+        elif action == "CompanyKey":
+            self.send_company_key(call, user)
+
         else:
             self.answer_in_development(call)
 
@@ -73,8 +79,15 @@ class AdminSection(Section):
 
     def send_company_info(self, call: CallbackQuery, user: User):
         company_photo, company_description = company.form_company_description(call)
+        markup = self._form_company_menu_markup()
 
-        self.send_message(call, company_description, photo=company_photo)
+        self.send_message(call, company_description, photo=company_photo, reply_markup=markup)
+
+    def send_vacancy_list(self, call: CallbackQuery, user: User):
+        self.answer_in_development(call)
+
+    def send_company_key(self, call: CallbackQuery, user: User):
+        self.answer_in_development(call)
 
     def send_mailing_menu(self, call: CallbackQuery, user: User):
         self.answer_in_development(call)
@@ -172,3 +185,21 @@ class AdminSection(Section):
         cv_menu_markup.add(back_btn)
 
         return cv_menu_markup
+
+    def _form_company_menu_markup(self) -> InlineKeyboardMarkup:
+
+        company_menu_markup = InlineKeyboardMarkup()
+
+        # company vacancies button
+        btn_text = "Список вакансій"
+        btn_callback = self.form_admin_callback(action="VacancyList", edit=True)
+        vacancy_list_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        company_menu_markup.add(vacancy_list_btn)
+
+        # company key button
+        btn_text = "Отримати ключ"
+        btn_callback = self.form_admin_callback(action="CompanyKey", edit=True)
+        company_key_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        company_menu_markup.add(company_key_btn)
+
+        return company_menu_markup
