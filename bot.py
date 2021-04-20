@@ -15,7 +15,7 @@ from telebot import TeleBot, logger
 
 import test_bot
 
-import logging
+import logging, os
 
 logger.setLevel(logging.INFO)
 
@@ -26,8 +26,16 @@ config.read("Settings.ini")
 
 logger.info("Settings read")
 
-API_TOKEN = config["TG"]["token"]
-CONNECTION_STRING = config["Mongo"]["db"]
+API_TOKEN = (
+    os.environ.get("TOKEN", False)
+    if os.environ.get("TOKEN", False)
+    else config["TG"]["token"]
+)
+CONNECTION_STRING = (
+    os.environ.get("DB", False)
+    if os.environ.get("DB", False)
+    else config["Mongo"]["db"]
+)
 
 bot = TeleBot(API_TOKEN, parse_mode="HTML")
 data = Data(conn_string=CONNECTION_STRING, bot=bot)
