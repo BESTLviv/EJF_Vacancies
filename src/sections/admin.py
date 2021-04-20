@@ -274,7 +274,7 @@ class AdminSection(Section):
         # Mail all auditory
         btn_text = "Розсилка на всю аудиторію"
         btn_callback = self.form_admin_callback(action="MailAll", edit=True)
-        btn_mail_all = InlineKeyboardButton(btn_text, btn_callback)
+        btn_mail_all = InlineKeyboardButton(btn_text, callback_data=btn_callback)
         markup.add(btn_mail_all)
 
         # Back button
