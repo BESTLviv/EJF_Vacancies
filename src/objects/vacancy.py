@@ -102,6 +102,7 @@ def delete_vacancy(call) -> str:
 
     return result
 
+
 def change_vacancy_status(call) -> str:
     vacancy_id = call.data.split(";")[4]
     vacancy = Vacancy.objects.with_id(vacancy_id)
@@ -115,5 +116,5 @@ def change_vacancy_status(call) -> str:
         result = "Вакансію увімкнено."
 
     vacancy.save()
-    
+
     return result

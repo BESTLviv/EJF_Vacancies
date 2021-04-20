@@ -98,8 +98,12 @@ class AdminSection(Section):
         self.send_message(call, text, reply_markup=company_list_markup)
 
     def send_company_info(self, call: CallbackQuery, user: User):
-        company_photo, company_description = company.form_company_description(call)
-        markup = self._form_company_menu_markup()
+        (
+            company_id,
+            company_photo,
+            company_description,
+        ) = company.form_company_description(call)
+        markup = self._form_company_menu_markup(company_id=company_id)
 
         self.send_message(
             call, company_description, photo=company_photo, reply_markup=markup
@@ -456,13 +460,15 @@ class AdminSection(Section):
 
         return markup
 
-    def _form_company_menu_markup(self) -> InlineKeyboardMarkup:
+    def _form_company_menu_markup(self, company_id) -> InlineKeyboardMarkup:
 
         company_menu_markup = InlineKeyboardMarkup()
 
         # company vacancies button
         btn_text = "Список вакансій"
-        btn_callback = self.form_admin_callback(action="VacancyList", edit=True)
+        btn_callback = self.form_admin_callback(
+            action="VacancyList", company_id=company_id, edit=True
+        )
         vacancy_list_btn = InlineKeyboardButton(
             text=btn_text, callback_data=btn_callback
         )
@@ -470,7 +476,9 @@ class AdminSection(Section):
 
         # company key button
         btn_text = "Отримати ключ"
-        btn_callback = self.form_admin_callback(action="CompanyKey", edit=True)
+        btn_callback = self.form_admin_callback(
+            action="CompanyKey", company_id=company_id, edit=True
+        )
         company_key_btn = InlineKeyboardButton(
             text=btn_text, callback_data=btn_callback
         )
@@ -478,7 +486,7 @@ class AdminSection(Section):
 
         return company_menu_markup
 
-    def _form_vacancy_menu_markup(self) -> InlineKeyboardMarkup:
+    def _form_vacancy_menu_markup(self, vacancy_id) -> InlineKeyboardMarkup:
 
         vacancy_menu_markup = InlineKeyboardMarkup()
 
@@ -491,8 +499,8 @@ class AdminSection(Section):
         company_menu_markup.add(delete_vacancy_btn)
 
         # on\off
-        btn_text = "Вкл\Викл"
-        btn_callback = self.form_admin_callback(action="OnOff", edit=True)
+        btn_text = "On\Off"
+        btn_callback = self.form_admin_callback(action="ChangeVacancyStatus", edit=True)
         on_off_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
         company_menu_markup.add(on_off_btn)
 
