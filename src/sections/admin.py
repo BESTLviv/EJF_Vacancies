@@ -113,7 +113,7 @@ class AdminSection(Section):
 
     def send_vacancy_info(self, call: CallbackQuery, user: User):
         vacancy_id = call.data.split(";")[4]
-        vacancy_description = vacancy.form_vacancy_info(vacancy_id)
+        vacancy_description = company.form_vacancy_info(vacancy_id)
         markup = self._form_vacancy_menu_markup(vacancy_id)
 
         self.send_message(call, vacancy_description, reply_markup=markup)
@@ -245,7 +245,7 @@ class AdminSection(Section):
 
         # company key button
         btn_text = "Отримати ключ"
-        btn_callback = self.form_admin_callback(action="CompanyKey", company_id=company_id, edit=True)
+        btn_callback = self.form_admin_callback(action="CompanyKey", company_id=company_id, new=True)
         company_key_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
         company_menu_markup.add(company_key_btn)
 
@@ -257,20 +257,20 @@ class AdminSection(Section):
 
         # delete vacancy
         btn_text = "Видалити вакансію"
-        btn_callback = self.form_admin_callback(action="DeleteVacancy", edit=True)
+        btn_callback = self.form_admin_callback(action="DeleteVacancy", vacancy_id=vacancy_id, edit=True)
         delete_vacancy_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
-        company_menu_markup.add(delete_vacancy_btn)
+        vacancy_menu_markup.add(delete_vacancy_btn)
 
         # on\off
         btn_text = "On\Off"
-        btn_callback = self.form_admin_callback(action="ChangeVacancyStatus", edit=True)
+        btn_callback = self.form_admin_callback(action="ChangeVacancyStatus", vacancy_id=vacancy_id, edit=True)
         on_off_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
-        company_menu_markup.add(on_off_btn)
+        vacancy_menu_markup.add(on_off_btn)
 
         # send statistics
         btn_text = "Статистика"
-        btn_callback = self.form_admin_callback(action="VacancyStatistics", edit=True)
+        btn_callback = self.form_admin_callback(action="VacancyStatistics", vacancy_id=vacancy_id, new=True)
         vacancy_statistics_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
-        company_menu_markup.add(vacancy_statistics_btn)
+        vacancy_menu_markup.add(vacancy_statistics_btn)
 
         return vacancy_menu_markup

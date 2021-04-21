@@ -91,13 +91,12 @@ def delete_vacancy(call) -> str:
     vacancy_id = call.data.split(";")[4]
     vacancy = Vacancy.objects.with_id(vacancy_id)
 
-    company = vacancy.company
+    vacancy_company = vacancy.company
 
     try:
-        Vacancy.delete_one({"_id":vacancy_id})
+        vacancy.delete()
         result = "Вакансію успішно видалено!"
-        company.vacancy_counter -= 1
-        Vacancy.update()
+        vacancy_company.vacancy_counter -= 1
     except:
         result = "Щось пішло не так :("
 

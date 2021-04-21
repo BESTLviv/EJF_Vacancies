@@ -21,3 +21,20 @@ def form_company_description(call) -> tuple:
     # TODO add HR field
     
     return company_id, company_photo, company_description
+
+def form_vacancy_info(vacancy_id) -> str:
+    vacancy = Vacancy.objects.with_id(vacancy_id)
+
+    vacancy_description = (
+        f"{vacancy.name}\n"
+        f"<b>Статус</b>: {vacancy.is_active}\n"
+        f"<b>Досвід - </b>: {vacancy.experience}\n"
+        f"<b>Зарплата</b>: {vacancy.salary}\n"
+        f"<b>Робочий день</b>: {vacancy.employment_type}\n"
+        f"<b>Опис</b>: \n{vacancy.description}\n"
+        f"<b>Вакансія дезактивується через: </b>: {vacancy.active_days_left} днів\n"
+        f"<b>Додано</b>: {vacancy.add_date}\n"
+        f"<b>Оновлено</b>: {vacancy.last_update_date}\n"
+    )
+
+    return vacancy_description
