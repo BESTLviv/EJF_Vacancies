@@ -110,22 +110,25 @@ class AdminSection(Section):
         )
 
     def send_vacancy_list(self, call: CallbackQuery, user: User):
-        vac_text = "Компанії"
+        text = "Вакансії"
+        company_id = call.data.split(";")[3]
+
         vacancy_list_markup = InlineKeyboardMarkup()
-        vacancy_list = Vacancy.objects.filter(
-            company=Company.objects.filter(name=Company.name)
-        )
+        vacancy_list = Vacancy.objects.filter(company=company_id)
         for vacancy in vacancy_list:
             vacancy_text = vacancy.name
             vacancy_callback = self.form_admin_callback(
                 action="VacancyInfo", vacancy_id=vacancy.id, new=True
             )
+            # print(vacancy_callback)
             vacancy_button = InlineKeyboardButton(
                 text=vacancy_text, callback_data=vacancy_callback
             )
+            # print("created button")
             vacancy_list_markup.add(vacancy_button)
+            # print("added btn")
 
-        self.send_message(call, vac_text, reply_markup=vacancy_list_markup)
+        self.send_message(call, text=text, reply_markup=vacancy_list_markup)
 
     def send_vacancy_info(self, call: CallbackQuery, user: User):
         vacancy_id = call.data.split(";")[4]
