@@ -129,11 +129,11 @@ class Section:
                             reply_markup=reply_markup,
                         )
                     # if text was edited
-                    elif call.message.text != text:
+                    elif call.message.caption != text:
                         self.bot.edit_message_caption(
                             chat_id=chat_id,
+                            message_id=message_id,
                             caption=text,
-                            photo=photo,
                             reply_markup=reply_markup,
                         )
                     # if markup was edited

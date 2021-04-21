@@ -74,8 +74,7 @@ def finish_add_vacancy(next_step: Iterator = None):
     pass
 
 
-def form_vacancy_info(vacancy_id) -> str:
-    vacancy = Vacancy.objects.with_id(vacancy_id)
+def form_vacancy_info(vacancy: Vacancy) -> str:
 
     vacancy_description = (
         f"{vacancy.name}\n"
