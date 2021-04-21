@@ -80,12 +80,22 @@ class UserSection(Section):
         
         self.bot.send_message(user.chat_id, text="Заявку надіслано.")
 
-        company_id = Vacancy.objects.with_id(vacancy_id).company
+        chat_id = Vacancy.objects.with_id(vacancy_id).company.HR.chat_id
+        vacancy_name = Vacancy.objects.with_id(vacancy_id).name
 
-        self.bot.send_message(company_id,text = "Нова заявка!")
-        self.bot.send_document(company_id, document=user.cv_file_id)
+        detail_markup = InlineKeyboardMarkup()
+        detail_text = "Побачити деталі..."
+        detail_callback = self.form_hr_callback(
+            action="aplication_details", user_id=chat_id, edit=True
+        )
+        detail = InlineKeyboardButton(text=detail_text, callback_data=detail_callback)
+        detail_markup.add(detail)
 
         user.apply_counter= user.apply_counter-1
+        user.save()
+
+        self.bot.send_message(chat_id,text = "Нова заявка на {vacancy_name}!".format(vacancy_name), reply_markup= detail_markup)
+        
 
 
     def send_profile_menu(self, user: User):

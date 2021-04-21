@@ -15,8 +15,9 @@ class HRSection(Section):
         if action == "VacList":
             self.send_vacany_list(user)
 
-        elif action == "":
-            pass
+        elif action == "aplication_details":
+            chat_id =  call.data.split(";")[2]
+            self.send_aplication_detail(user,chat_id)
 
         else:
             pass
@@ -33,6 +34,11 @@ class HRSection(Section):
         btn_my_vacancies = InlineKeyboardButton(btn_text, btn_callback)
 
         self.bot.send_photo()
+
+    def send_aplication_detail(self,user: User,chat_id):
+
+        self.bot.send_message(chat_id,"Info about user...",)
+        self.bot.send_document(chat_id,document= user.cv_file_id)
 
     def send_vacany_list(self, user: User):
         pass
