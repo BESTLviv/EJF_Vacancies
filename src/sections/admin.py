@@ -85,23 +85,24 @@ class AdminSection(Section):
         self.send_message(call, company_description, photo=company_photo, reply_markup=markup)
 
     def send_vacancy_list(self, call: CallbackQuery, user: User):
-        #self.answer_in_development(call)
-        vac_text = "Компанії"
+        text = "Вакансії"
         vacancy_list_markup = InlineKeyboardMarkup()
-        vacancy_list = Vacancy.objects.filter()
-        self.data.add_test_company_with_vacancies()
+        vacancy_list = Vacancy.objects.filter(company = Company.objects.filter(name = Company.name))
         for vacancy in vacancy_list:
-            vac_text = vacancy.name
-            vac_callback = self.form_admin_callback(action = "VacancyInfo" , vacancy_id= vacancy.id)
-            vac_button = InlineKeyboardButton(text = vac_text , callback_data= vac_callback)
-            vacancy_list_markup.add(vac_button)
+            vacancy_text = vacancy.name
+            vacancy_callback = self.form_admin_callback(action = "VacancyInfo" , vacancy_id= vacancy.id , new=True)
+            vacancy_button = InlineKeyboardButton(text = vacancy_text , callback_data= vacancy_callback)
+            vacancy_list_markup.add(vacancy_button)
         
-        self.send_message(call , vac_text , reply_markup = vacancy_list_markup )
+        self.send_message(call , text , reply_markup = vacancy_list_markup )
 
             
 
     def send_company_key(self, call: CallbackQuery, user: User):
-        self.answer_in_development(call)
+        #self.answer_in_development(call)
+        text = "Привіт з Іяку!"
+        self.send_message(call , text)
+
 
     def send_mailing_menu(self, call: CallbackQuery, user: User):
         self.answer_in_development(call)
