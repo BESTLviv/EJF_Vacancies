@@ -20,20 +20,4 @@ def form_company_description(call) -> tuple:
     )
     # TODO add HR field
     
-    return company_photo, company_description
-
-def form_vacancy_description(call) -> str:
-    vacancy_id = call.data.split(";")[4]
-    vacancy = Vacancy.objects.with_id(vacancy_id)
-
-    vacancy_description = (
-        f"<b>Тег: <\b> {vacancy.tag}\n"
-        f"<b>Назва: <\b> {vacancy.name}\n"
-        f"<b>Компанія: <\b> {vacancy.company}\n"
-        f"<b>Досвід: <\b> {vacancy.experience}\n"
-        f"<b>Зарплата: <\b> {vacancy.salary}\n"
-        f"<b>Робочий день: <\b> {vacancy.employment_type}\n"
-        f"<b>Опис: <\b>\n {vacancy.description}\n"
-    )
-
-    return vacancy_description
+    return company_id, company_photo, company_description
