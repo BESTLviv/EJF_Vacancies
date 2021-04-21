@@ -223,7 +223,7 @@ class AdminSection(Section):
                 try:
                     if photo:
                         self.bot.send_photo(
-                            user.chat_id, caption=text, reply_markup=markup
+                            user.chat_id, caption=text, photo=photo, reply_markup=markup
                         )
                     else:
                         self.bot.send_message(user.chat_id, text, reply_markup=markup)
