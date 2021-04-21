@@ -76,8 +76,17 @@ class UserSection(Section):
     def apply_for_vacancy(
         self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
     ):
-        # TODO do apply for vacancy
-        pass
+        # TODO do apply for vacancy(LOGS for checking if the user already applied)
+        
+        self.bot.send_message(user.chat_id, text="Заявку надіслано.")
+
+        company_id = Vacancy.objects.with_id(vacancy_id).company
+
+        self.bot.send_message(company_id,text = "Нова заявка!")
+        self.bot.send_document(company_id, document=user.cv_file_id)
+
+        user.apply_counter= user.apply_counter-1
+
 
     def send_profile_menu(self, user: User):
         self.bot.send_message(user.chat_id, text="Test")
