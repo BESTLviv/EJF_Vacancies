@@ -229,9 +229,7 @@ class AdminSection(Section):
                         self.bot.send_message(user.chat_id, text, reply_markup=markup)
                     counter += 1
                 except Exception as e:
-                    err_text = (
-                        f"User {user.username} {user.chat_id} didn't receive message"
-                    )
+                    err_text = f"User {user.username} {user.chat_id} didn't receive message - {e}"
                     logger.error(err_text)
                     self.bot.send_message(chat_id=admin_chat_id, text=err_text)
                     user.is_blocked = True
@@ -278,6 +276,9 @@ class AdminSection(Section):
                     markup.add(btn)
         except Exception as e:
             print(f"{e} during mailing")
+            self.bot.send_message(
+                message.chat.id, text=f"Щось пішло не так з посиланням - {e}"
+            )
 
         self.send_message_to_auditory(
             admin_chat_id=message.chat.id,
