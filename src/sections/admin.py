@@ -131,9 +131,9 @@ class AdminSection(Section):
         self.answer_in_development(call)
 
     def send_company_key(self, call: CallbackQuery, user: User):
-        #self.answer_in_development(call)
-        text = "Привіт з Іяку!"
-        self.send_message(call , text)
+        company_id = call.data.split(";")[3]
+        company_key = Company.objects.with_id(company_id).token
+        self.send_message(call , text = company_key)
 
 
     def send_mailing_menu(self, call: CallbackQuery, user: User):
