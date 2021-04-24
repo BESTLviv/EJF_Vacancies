@@ -140,7 +140,7 @@ def test_save_cv(message):
         user.cv_file_id = file_id
         user.cv_file_name = file_name
         user.save()
-        bot.send_message(chat_id, text=f"Дякую {user.name}!")
+        bot.send_message(chat_id, text=f"Дякую, зберіг!")
         print(f"{user.name} загрузив {file_name} розміром {file_size/(1024**2)} МБ")
 
 

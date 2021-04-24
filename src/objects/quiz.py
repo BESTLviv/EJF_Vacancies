@@ -2,7 +2,12 @@ from ..data import Data, User, Quiz, Question
 from ..staff import utils
 
 from telebot import TeleBot
-from telebot.types import Message, KeyboardButton, ReplyKeyboardMarkup
+from telebot.types import (
+    Message,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+)
 
 from typing import Iterator, Callable
 from time import sleep
@@ -149,7 +154,11 @@ def process_message(message: Message, **kwargs):
 
             # if answer was valid - send message about it
             if question.correct_answer_message:
-                bot.send_message(user.chat_id, text=question.correct_answer_message)
+                bot.send_message(
+                    user.chat_id,
+                    text=question.correct_answer_message,
+                    reply_markup=ReplyKeyboardRemove(),
+                )
                 sleep(0.5)
 
             # next question
