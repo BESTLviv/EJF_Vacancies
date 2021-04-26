@@ -33,6 +33,9 @@ def form_and_send_new_cv_archive(bot: TeleBot, user: User):
             )
             return
 
+    # clear archives list
+    ejf.cv_archive_file_id_list = list()
+
     for temp_archive_path in _form_max_size_archive(bot):
         # show sending document
         bot.send_chat_action(chat_id, action="upload_document")
