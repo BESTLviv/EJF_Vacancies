@@ -57,22 +57,26 @@ def start_bot(message):
     user = updater.update_user_interaction_time(message)
 
     # If it is the first start
-    if user.additional_info is None:
-        send_welcome_message_and_start_quiz(user)
+    try:
+        if user.additional_info is None:
+            send_welcome_message_and_start_quiz(user)
 
-    # If in Job Fair mode
-    # TODO fix it later
-    # elif user.last_interaction_date < data.JOB_FAIR_END_TIME:
-    #    job_fair_section.send_start_menu(user)
+        # If in Job Fair mode
+        # TODO fix it later
+        # elif user.last_interaction_date < data.JOB_FAIR_END_TIME:
+        #    job_fair_section.send_start_menu(user)
 
-    # If user is HR
-    elif user.hr_status is True:
-        hr_section.send_start_menu(user=user)
+        # If user is HR
+        elif user.hr_status is True:
+            hr_section.send_start_menu(user=user)
 
-    # If user is basic user
-    else:
-        job_fair_section.send_start_menu(user)
-        # user_section.send_start_menu(user=user)
+        # If user is basic user
+        else:
+            job_fair_section.send_start_menu(user)
+            # user_section.send_start_menu(user=user)
+
+    except Exception as e:
+        print(f"Exception during start - {e}")
 
 
 @bot.callback_query_handler(func=lambda call: True)
