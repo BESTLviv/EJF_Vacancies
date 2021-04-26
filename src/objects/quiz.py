@@ -227,7 +227,7 @@ def _handle_commands(message: Message) -> bool:
     """
     # TODO handle every command and check if quiz is interruptable
 
-    if message.input_type == "text":
+    if message.content_type == "text":
         command_text = message.text
 
         if command_text[0] == "/":
