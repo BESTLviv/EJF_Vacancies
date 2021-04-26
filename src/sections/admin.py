@@ -29,6 +29,9 @@ class AdminSection(Section):
         elif action == "MailAll":
             self.mail_all(user)
 
+        elif action == "MailMe":
+            self.mail_me_test(user)
+
         elif action == "Statistic":
             self.send_statistic(call, user)
 
@@ -137,6 +140,17 @@ class AdminSection(Section):
             user.chat_id, self._process_mail_users, auditory="all", user=user
         )
 
+    def mail_me_test(self, user):
+        text = (
+            "Надішли повідомлення для тесту і я надішлю тобі його кінцевий вигляд\n\n"
+            "Якщо потрібно вставити кнопку-посилання, то в останньому рядку тексту напиши посилання формату <b>https... ->btn_name</b>"
+        )
+
+        self.bot.send_message(user.chat_id, text=text)
+        self.bot.register_next_step_handler_by_chat_id(
+            user.chat_id, self._process_mail_users, auditory="me", user=user
+        )
+
     def send_message_to_auditory(
         self,
         admin_chat_id,
@@ -146,29 +160,38 @@ class AdminSection(Section):
         user: User,
         auditory="all",
     ):
+        def send_message(receiver: User, text=None, photo=None, markup=None):
+            try:
+                if photo:
+                    self.bot.send_photo(
+                        receiver.chat_id, caption=text, photo=photo, reply_markup=markup
+                    )
+                else:
+                    self.bot.send_message(receiver.chat_id, text, reply_markup=markup)
+                return True
+            except Exception as e:
+                err_text = f"User {receiver.username} {receiver.chat_id} didn't receive message - {e}"
+                logger.error(err_text)
+                self.bot.send_message(chat_id=admin_chat_id, text=err_text)
+                receiver.is_blocked = True
+                receiver.save()
 
         if auditory == "all":
             users = User.objects.filter(additional_info__ne=None)
 
             counter = 0
-            for user in users:
-                try:
-                    if photo:
-                        self.bot.send_photo(
-                            user.chat_id, caption=text, photo=photo, reply_markup=markup
-                        )
-                    else:
-                        self.bot.send_message(user.chat_id, text, reply_markup=markup)
-                    counter += 1
-                except Exception as e:
-                    err_text = f"User {user.username} {user.chat_id} didn't receive message - {e}"
-                    logger.error(err_text)
-                    self.bot.send_message(chat_id=admin_chat_id, text=err_text)
-                    user.is_blocked = True
-                    user.save()
 
-        success_text = f"Повідомлення відправлено {counter} користувачам"
-        self.bot.send_message(chat_id=admin_chat_id, text=success_text)
+            for registered_user in users:
+                if send_message(registered_user, text, photo, markup):
+                    counter += 1
+
+            success_text = f"Повідомлення відправлено {counter} користувачам"
+            self.bot.send_message(chat_id=admin_chat_id, text=success_text)
+
+        elif auditory == "me":
+            send_message(user, text, photo, markup)
+
+        self.send_admin_menu(user)
 
     def _process_mail_users(self, message, **kwargs):
         """
@@ -197,10 +220,10 @@ class AdminSection(Section):
         # find if there is link in text and form markup
         try:
             if text:
-                text_splitted = message.text.split("\n")
+                text_splitted = text.split("\n")
                 last_row = text_splitted[-1]
                 if "https" in last_row and "->" in last_row:
-                    text = text_splitted[:-1].join("")
+                    text = "\n".join(text_splitted[:-1])
 
                     # form button
                     url, btn_text = last_row.split("->")
@@ -294,6 +317,12 @@ class AdminSection(Section):
         btn_callback = self.form_admin_callback(action="MailAll", edit=True)
         btn_mail_all = InlineKeyboardButton(btn_text, callback_data=btn_callback)
         markup.add(btn_mail_all)
+
+        # Mail me test
+        btn_text = "Перевірити кінцеве повідомлення"
+        btn_callback = self.form_admin_callback(action="MailMe", edit=True)
+        btn_mail_me_test = InlineKeyboardButton(btn_text, callback_data=btn_callback)
+        markup.add(btn_mail_me_test)
 
         # Back button
         btn_callback = self.form_admin_callback(action="AdminMenu", edit=True)
