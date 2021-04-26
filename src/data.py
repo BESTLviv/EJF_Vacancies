@@ -416,6 +416,7 @@ class User(me.Document):
     cv_file_name = me.StringField(default=None)
     apply_counter = me.IntField(default=20)
     additional_info = me.DictField(default=None)
+    register_source = me.StringField(default="Unknown")
     registration_date = me.DateTimeField(required=True)
     last_update_date = me.DateTimeField(required=True)
     last_interaction_date = me.DateTimeField(required=True)
