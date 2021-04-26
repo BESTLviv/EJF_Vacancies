@@ -117,6 +117,12 @@ def process_message(message: Message, **kwargs):
     content_type = message.content_type
 
     try:
+        # handle command input
+        if _handle_commands(message) is True:
+            return
+        else:
+            raise InputException
+
         if content_type == question.input_type:
 
             if content_type == "text":
@@ -217,10 +223,16 @@ def _create_answer_markup(question: Question) -> ReplyKeyboardMarkup:
     return answer_markup
 
 
-def _handle_commands(message: Message, command_text: str):
+def _handle_commands(message: Message) -> bool:
+    """
+    return True if need to interrupt current quiz
+    """
+    # TODO handle every command and check if quiz is interruptable
 
-    if command_text == "\start":
-        pass
+    if message.input_type == "text":
+        command_text = message.text
+
+    return False
 
 
 def _save_answers_to_user(user: User, container):
