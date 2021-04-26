@@ -35,7 +35,7 @@ def start_starting_quiz(user: User, bot: TeleBot, final_func: Callable):
     quiz_iterator = iter(start_quiz_questions)
     question = next(quiz_iterator)
 
-    sleep(4)
+    sleep(2)
 
     send_question(
         user,
@@ -120,8 +120,6 @@ def process_message(message: Message, **kwargs):
         # handle command input
         if _handle_commands(message) is True:
             return
-        else:
-            raise InputException
 
         if content_type == question.input_type:
 
@@ -231,6 +229,9 @@ def _handle_commands(message: Message) -> bool:
 
     if message.input_type == "text":
         command_text = message.text
+
+        if command_text[0] == "/":
+            raise InputException
 
     return False
 
