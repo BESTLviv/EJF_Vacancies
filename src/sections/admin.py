@@ -97,17 +97,18 @@ class AdminSection(Section):
         self.send_message(call, company_description, photo=company_photo, reply_markup=markup)
 
     def send_vacancy_list(self, call: CallbackQuery, user: User):
-        text = "Вакансії"
+        text = "Вакансії компанії:"
+
         company_id = call.data.split(";")[3]
         company = Company.objects.with_id(company_id)
 
         vacancy_list_markup = InlineKeyboardMarkup()
         vacancy_list = Vacancy.objects.filter(company=company)
         for vacancy in vacancy_list:
-            vacancy_text = vacancy.name
-            vacancy_callback = self.form_admin_callback(action="VacancyInfo", vacancy_id=vacancy.id, new=True)
-            vacancy_button = InlineKeyboardButton(text = vacancy_text, callback_data=vacancy_callback)
-            vacancy_list_markup.add(vacancy_button)
+            btn_text = vacancy.name
+            btn_callback = self.form_admin_callback(action="VacancyInfo", vacancy_id=vacancy.id, new=True)
+            btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+            vacancy_list_markup.add(btn)
         
         self.send_message(call, text=text, reply_markup=vacancy_list_markup)
 
@@ -133,7 +134,7 @@ class AdminSection(Section):
     def send_company_key(self, call: CallbackQuery, user: User):
         company_id = call.data.split(";")[3]
         company_key = Company.objects.with_id(company_id).token
-        self.send_message(call , text = company_key)
+        self.send_message(call , text=company_key)
 
 
     def send_mailing_menu(self, call: CallbackQuery, user: User):
@@ -257,13 +258,13 @@ class AdminSection(Section):
 
         # delete vacancy
         btn_text = "Видалити вакансію"
-        btn_callback = self.form_admin_callback(action="DeleteVacancy", vacancy_id=vacancy_id, edit=True)
+        btn_callback = self.form_admin_callback(action="DeleteVacancy", vacancy_id=vacancy_id, new=True)
         delete_vacancy_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
         vacancy_menu_markup.add(delete_vacancy_btn)
 
         # on\off
         btn_text = "On\Off"
-        btn_callback = self.form_admin_callback(action="ChangeVacancyStatus", vacancy_id=vacancy_id, edit=True)
+        btn_callback = self.form_admin_callback(action="ChangeVacancyStatus", vacancy_id=vacancy_id, new=True)
         on_off_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
         vacancy_menu_markup.add(on_off_btn)
 

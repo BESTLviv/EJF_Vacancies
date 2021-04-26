@@ -1,5 +1,5 @@
 from typing import Iterator
-from ..data import User, Vacancy
+from ..data import User, Vacancy, Data
 
 
 def add_vacancy():
@@ -114,6 +114,6 @@ def change_vacancy_status(call) -> str:
         vacancy.is_active = True
         result = "Вакансію увімкнено."
 
-    Vacancy.update()
-
+    vacancy.save()
+    
     return result
