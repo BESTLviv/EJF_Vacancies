@@ -137,10 +137,17 @@ def test_save_cv(message):
         bot.send_message(chat_id, text="Приймаю тільки файли формату pdf")
 
     else:
+        if user.cv_file_id is not None:
+            answer = "Дякую, я оновив твоє резюме!"
+        else:
+            answer = "Дякую, зберіг!"
+
         user.cv_file_id = file_id
         user.cv_file_name = file_name
         user.save()
-        bot.send_message(chat_id, text=f"Дякую, зберіг!")
+
+        bot.send_message(chat_id, text=answer)
+
         print(f"{user.name} загрузив {file_name} розміром {file_size/(1024**2)} МБ")
 
 
