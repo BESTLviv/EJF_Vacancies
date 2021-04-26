@@ -61,8 +61,9 @@ def start_bot(message):
         send_welcome_message_and_start_quiz(user)
 
     # If in Job Fair mode
-    elif user.last_interaction_date < data.JOB_FAIR_END_TIME:
-        job_fair_section.send_start_menu(user)
+    # TODO fix it later
+    # elif user.last_interaction_date < data.JOB_FAIR_END_TIME:
+    #    job_fair_section.send_start_menu(user)
 
     # If user is HR
     elif user.hr_status is True:
@@ -70,7 +71,8 @@ def start_bot(message):
 
     # If user is basic user
     else:
-        user_section.send_start_menu(user=user)
+        job_fair_section.send_start_menu(user)
+        # user_section.send_start_menu(user=user)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -157,13 +159,15 @@ def send_welcome_message_and_start_quiz(user: User):
     welcome_photo = ejf.content.start_photo
     bot.send_photo(user.chat_id, photo=welcome_photo, caption=welcome_text)
 
-    # if Job Fair not ended
-    if user.last_interaction_date < data.JOB_FAIR_END_TIME:
-        final_func = job_fair_section.send_start_menu
+    final_func = job_fair_section.send_start_menu
 
-    # if Job Fair ended
-    else:
-        final_func = user_section.send_start_menu
+    # if Job Fair not ended
+    # if user.last_interaction_date < data.JOB_FAIR_END_TIME:
+    #    final_func = job_fair_section.send_start_menu
+    #
+    ## if Job Fair ended
+    # else:
+    #    final_func = user_section.send_start_menu
 
     quiz.start_starting_quiz(user, bot, final_func)
 
