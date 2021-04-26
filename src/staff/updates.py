@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import threading
 
 from telebot.types import Message
@@ -15,7 +15,7 @@ class Updater:
 
     def update_user_interaction_time(self, message: Message) -> User:
         user_chat_id = message.chat.id
-        date = datetime.now()
+        date = datetime.now(tz=timezone.utc)
 
         user = User.objects.filter(chat_id=user_chat_id)
 
@@ -52,7 +52,7 @@ class Updater:
         # update user if exists
         else:
             user = user[0]
-            date = datetime.now()
+            date = datetime.now(tz=timezone.utc)
             user.update(last_interaction_date=date)
 
         return user

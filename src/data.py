@@ -1,6 +1,6 @@
 from telebot import TeleBot
 import mongoengine as me
-from datetime import datetime
+from datetime import datetime, timezone
 
 import string
 import random
@@ -50,7 +50,7 @@ class Data:
         vacancy_counter = 20  # ?
         HR = user
         token = self._generate_string()
-        registration_date = datetime.now()
+        registration_date = datetime.now(tz=timezone.utc)
 
         test_company = Company(
             name=name,
@@ -72,8 +72,8 @@ class Data:
             experience = self._generate_string()
             employment_type = self._generate_string()
             description = self._generate_string(long=True)
-            add_date = datetime.now()
-            last_update_date = datetime.now()
+            add_date = datetime.now(tz=timezone.utc)
+            last_update_date = datetime.now(tz=timezone.utc)
             active_days_left = 14
             is_active = True
 
@@ -304,7 +304,7 @@ class Data:
         ejf.content.start_text = content.start_text.replace("\\n", "\n")
         ejf.content.user_start_text = content.user_start_text.replace("\\n", "\n")
         ejf.content.ejf_start_text = content.ejf_start_text.replace("\\n", "\n")
-        
+
         ejf.content.save()
         ejf.save()
 
@@ -344,7 +344,7 @@ class Data:
         hr_status=False,
     ):
 
-        registration_date = datetime.now()
+        registration_date = datetime.now(tz=timezone.utc)
         last_interaction_date = registration_date
         last_update_date = registration_date
 
