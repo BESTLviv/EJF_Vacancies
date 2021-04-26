@@ -191,6 +191,7 @@ class AdminSection(Section):
                 for archive in last_cv_zip_list:
                     self.bot.send_chat_action(chat_id, action="upload_document")
                     self.bot.send_document(chat_id=chat_id, data=archive)
+                    self.bot.answer_callback_query(call.id)
 
             else:
                 self.bot.answer_callback_query(
