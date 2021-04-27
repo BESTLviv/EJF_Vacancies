@@ -1,9 +1,10 @@
+from src.objects import vacancy
 from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from telebot import logger
 
-from ..data import Data, User, JobFair, Company
+from ..data import Data, User, JobFair, Company, Vacancy
 from .section import Section
-from ..objects import company
+from ..objects import company, vacancy
 
 from ..staff import utils
 
@@ -48,6 +49,24 @@ class AdminSection(Section):
         elif action == "CompanyDetails":
             self.send_company_info(call, user)
 
+        elif action == "VacancyList":
+            self.send_vacancy_list(call, user)
+
+        elif action == "CompanyKey":
+            self.send_company_key(call, user)
+
+        elif action == "VacancyInfo":
+            self.send_vacancy_info(call, user)
+
+        elif action == "DeleteVacancy":
+            self.delete_vacancy(call, user)
+
+        elif action == "ChangeVacancyStatus":
+            self.change_vacancy_status(call, user)
+
+        elif action == "VacancyStatistics":
+            self.send_vacancy_statistics(call, user)
+
         else:
             self.answer_in_development(call)
 
@@ -79,9 +98,76 @@ class AdminSection(Section):
         self.send_message(call, text, reply_markup=company_list_markup)
 
     def send_company_info(self, call: CallbackQuery, user: User):
-        company_photo, company_description = company.form_company_description(call)
+        (
+            company_id,
+            company_photo,
+            company_description,
+        ) = company.form_company_description(call)
+        markup = self._form_company_menu_markup(company_id=company_id)
 
-        self.send_message(call, company_description, photo=company_photo)
+        self.send_message(
+            call, company_description, photo=company_photo, reply_markup=markup
+        )
+
+    def send_vacancy_list(self, call: CallbackQuery, user: User):
+        text = "Вакансії"
+        company_id = call.data.split(";")[3]
+        company = Company.objects.with_id(company_id)
+
+        vacancy_list_markup = InlineKeyboardMarkup()
+        vacancy_list = Vacancy.objects.filter(company=company)
+        for vacancy in vacancy_list:
+            vacancy_text = vacancy.name
+            vacancy_callback = self.form_admin_callback(
+                action="VacancyInfo", vacancy_id=vacancy.id, new=True
+            )
+            vacancy_button = InlineKeyboardButton(
+                text=vacancy_text, callback_data=vacancy_callback
+            )
+            vacancy_list_markup.add(vacancy_button)
+
+        self.send_message(call, text=text, reply_markup=vacancy_list_markup)
+
+    def send_vacancy_info(self, call: CallbackQuery, user: User):
+        vacancy_id = call.data.split(";")[4]
+        vacancy_description = company.form_vacancy_info(vacancy_id)
+        markup = self._form_vacancy_menu_markup(vacancy_id)
+
+        self.send_message(call, vacancy_description, reply_markup=markup)
+
+    def delete_vacancy(self, call: CallbackQuery, user: User):
+        result = vacancy.delete_vacancy(call)
+        self.send_message(call, result)
+
+    def change_vacancy_status(self, call: CallbackQuery, user: User):
+        result = vacancy.change_vacancy_status(call)
+        self.send_message(call, result)
+
+    def send_vacancy_statistics(self, call: CallbackQuery, user: User):
+        # TODO
+        self.answer_in_development(call)
+
+    def send_mailing_menu(self, call: CallbackQuery, user: User):
+        chat_id = user.chat_id
+
+        # form text
+        user_count = User.objects.count()
+        user_registered_count = User.objects.filter(additional_info__ne=None).count()
+        user_not_blocked_count = User.objects.filter(is_blocked=False).count()
+        text = (
+            f"Всього стартануло бот - <b>{user_count}</b>\n"
+            f"Пройшло реєстрацію - <b>{user_registered_count}</b>\n"
+            f"Всього не заблокованих користувачів - <b>{user_not_blocked_count}</b>"
+        )
+
+        markup = self._form_mailing_markup()
+
+        self.send_message(call, text, reply_markup=markup)
+
+    def send_company_key(self, call: CallbackQuery, user: User):
+        company_id = call.data.split(";")[3]
+        company_key = Company.objects.with_id(company_id).token
+        self.send_message(call, text=company_key)
 
     def send_mailing_menu(self, call: CallbackQuery, user: User):
         chat_id = user.chat_id
@@ -309,6 +395,66 @@ class AdminSection(Section):
         cv_menu_markup.add(back_btn)
 
         return cv_menu_markup
+
+    def _form_company_menu_markup(self, company_id) -> InlineKeyboardMarkup:
+
+        company_menu_markup = InlineKeyboardMarkup()
+
+        # company vacancies button
+        btn_text = "Список вакансій"
+        btn_callback = self.form_admin_callback(
+            action="VacancyList", company_id=company_id, new=True
+        )
+        vacancy_list_btn = InlineKeyboardButton(
+            text=btn_text, callback_data=btn_callback
+        )
+        company_menu_markup.add(vacancy_list_btn)
+
+        # company key button
+        btn_text = "Отримати ключ"
+        btn_callback = self.form_admin_callback(
+            action="CompanyKey", company_id=company_id, new=True
+        )
+        company_key_btn = InlineKeyboardButton(
+            text=btn_text, callback_data=btn_callback
+        )
+        company_menu_markup.add(company_key_btn)
+
+        return company_menu_markup
+
+    def _form_vacancy_menu_markup(self, vacancy_id) -> InlineKeyboardMarkup:
+
+        vacancy_menu_markup = InlineKeyboardMarkup()
+
+        # delete vacancy
+        btn_text = "Видалити вакансію"
+        btn_callback = self.form_admin_callback(
+            action="DeleteVacancy", vacancy_id=vacancy_id, new=True
+        )
+        delete_vacancy_btn = InlineKeyboardButton(
+            text=btn_text, callback_data=btn_callback
+        )
+        vacancy_menu_markup.add(delete_vacancy_btn)
+
+        # on\off
+        btn_text = "On\Off"
+        btn_callback = self.form_admin_callback(
+            action="ChangeVacancyStatus", vacancy_id=vacancy_id, new=True
+        )
+        on_off_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        vacancy_menu_markup.add(on_off_btn)
+
+        # send statistics
+        btn_text = "Статистика"
+        btn_callback = self.form_admin_callback(
+            action="VacancyStatistics", vacancy_id=vacancy_id, new=True
+        )
+        vacancy_statistics_btn = InlineKeyboardButton(
+            text=btn_text, callback_data=btn_callback
+        )
+        vacancy_menu_markup.add(vacancy_statistics_btn)
+
+        return vacancy_menu_markup
 
     def _form_mailing_markup(self) -> InlineKeyboardMarkup:
         markup = InlineKeyboardMarkup()
