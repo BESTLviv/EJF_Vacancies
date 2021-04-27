@@ -1,16 +1,18 @@
+
 from telebot.types import CallbackQuery
 
 from ..data import (
     Data,
     User,
-    Company
+    Company,
+    Vacancy 
 )
 from .section import Section
+from ..objects import vacancy
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-class HR(Section):
-
+class HRSection(Section):
     def __init__(self, data: Data):
         super().__init__(data=data)
 
@@ -25,6 +27,12 @@ class HR(Section):
         
         elif action == "Sign_out_from_company":
             self.quit_company_status()
+
+        elif action == "VacInfo":
+            pass
+          
+        else:
+            pass
 
     def process_text(self, text):
         pass
@@ -52,14 +60,24 @@ class HR(Section):
         markup_inline.add(btn_my_company)
         markup_inline.add(btn_sign_out_from_company)
 
-    def send_vacancy_list(self, user: User):
-        pass
+    def send_vacancy_list(self, user: User, call: CallbackQuery=None):
+        vac_text = 'Вакансії'
+        
+        company = Company.objects.filter(HR=user).first()
+        vacancy_list = Vacancy.objects.filter(company=company).first()
+        
+        keyboard = InlineKeyboardMarkup()
+        for vacancy in vacancy_list:
+           button_text = vacancy.name
+           callback = self.form_hr_callback(action="VacInfo", vacancy_id=vacancy.id, new=True)
+           vacancy_button = InlineKeyboardButton(button_text,  callback_data=callback)
+           keyboard.add(vacancy_button)
+        
+        self.send_message(call, vac_text, reply_markup=keyboard)        
 
     def add_vacancy(self):
         pass
-    
-    def show_vacancy(self):
-        pass
+
 
     def show_vacancy_stats(self):
         pass
@@ -74,9 +92,6 @@ class HR(Section):
         pass
 
     def change_vacancy_status(self, current_status: int):
-        pass
-
-    def show_my_company(self):
         pass
 
     def quit_company_status(self, chat_id):
