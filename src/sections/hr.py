@@ -20,7 +20,13 @@ class HRSection(Section):
         action = call.data.split(";")[1]
 
         if action == "VacList":
-            self.send_vacany_list(user)
+            self.send_vacancy_list(user)
+
+        elif action == "My_Company":
+            self.show_my_company()
+        
+        elif action == "Sign_out_from_company":
+            self.quit_company_status()
 
         elif action == "VacInfo":
             pass
@@ -35,11 +41,24 @@ class HRSection(Section):
         company = Company.objects.filter()[0]
 
         # my vacancies
-        btn_text = "Мої"
-        btn_callback = self.form_hr_callback(action="VacList")
-        btn_my_vacancies = InlineKeyboardButton(btn_text, btn_callback)
+        btn_text1 = "Мої вакансії"
+        btn_text2 = "Моя компанія"
+        btn_text3 = "Вийти з профілю компанії"
 
-        self.bot.send_photo()
+        btn_callback_vaclist = self.form_hr_callback(action="VacList")
+        btn_callback_company = self.form_hr_callback(action="My_Company")
+        btn_callback_sign_out = self.form_hr_callback(action="Sign_out_from_company")
+
+        btn_my_vacancies = InlineKeyboardButton(btn_text1, btn_callback_vaclist)
+        btn_my_company = InlineKeyboardButton(btn_text2, btn_callback_company)
+        btn_sign_out_from_company = InlineKeyboardButton(btn_text3, btn_callback_sign_out)
+
+        markup_inline = InlineKeyboardMarkup()
+        self.bot.send_photo(user, company.photo_id, company.description)
+
+        markup_inline.add(btn_my_vacancies)
+        markup_inline.add(btn_my_company)
+        markup_inline.add(btn_sign_out_from_company)
 
     def send_vacancy_list(self, user: User, call: CallbackQuery=None):
         vac_text = 'Вакансії'
@@ -55,7 +74,6 @@ class HRSection(Section):
            keyboard.add(vacancy_button)
         
         self.send_message(call, vac_text, reply_markup=keyboard)        
-        
 
     def add_vacancy(self):
         pass
