@@ -84,7 +84,7 @@ class UserSection(Section):
         self.bot.send_message(user.chat_id, text="Test")
 
     def apply_for_vacancy(
-            self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
+        self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
     ):
         # TODO do apply for vacancy
         pass
@@ -95,16 +95,22 @@ class UserSection(Section):
     def change_account_type(self, user: User):
         pass
 
-    def send_vacancy_info(self, user: User, vac: Vacancy, cur_vac_index: int, call: CallbackQuery = None):
+    def send_vacancy_info(
+        self, user: User, vac: Vacancy, cur_vac_index: int, call: CallbackQuery = None
+    ):
         chat_id = user.chat_id
         vacancy_id = vac.id
         vacancy_description = vacancy.form_vacancy_info(vac)
         company_photo = vac.company.photo_id
         vacancies_list = list(Vacancy.objects)
-        vacancy_info_menu_markup = self._form_vacancy_info_menu_markup(vac, vacancies_list, cur_vac_index)
+        vacancy_info_menu_markup = self._form_vacancy_info_menu_markup(
+            vac, vacancies_list, cur_vac_index
+        )
 
         if call:
-            self.send_message(call, vacancy_description, company_photo, vacancy_info_menu_markup)
+            self.send_message(
+                call, vacancy_description, company_photo, vacancy_info_menu_markup
+            )
         else:
             self.bot.send_photo(
                 chat_id=user.chat_id,
@@ -119,15 +125,16 @@ class UserSection(Section):
         vacancy_index = vacancies.index(vac)
         return vac, vacancy_index
 
-    def _form_vacancy_info_menu_markup(self, vac: Vacancy, vacancies_list: list,
-                                       cur_vac_index: int) -> InlineKeyboardMarkup:
+    def _form_vacancy_info_menu_markup(
+        self, vac: Vacancy, vacancies_list: list, cur_vac_index: int
+    ) -> InlineKeyboardMarkup:
 
         next_vac_index = int()
 
         if cur_vac_index == len(vacancies_list) - 1:
             next_vac_index = 0
         else:
-            next_vac_index += 1
+            next_vac_index = cur_vac_index + 1
 
         prev_vac_index = cur_vac_index - 1
 

@@ -134,7 +134,6 @@ class Section:
                             chat_id=chat_id,
                             message_id=message_id,
                             caption=text,
-                            photo=photo,
                             reply_markup=reply_markup,
                         )
                     # if markup was edited
