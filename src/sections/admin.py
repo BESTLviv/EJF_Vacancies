@@ -147,6 +147,23 @@ class AdminSection(Section):
         # TODO
         self.answer_in_development(call)
 
+    def send_mailing_menu(self, call: CallbackQuery, user: User):
+        chat_id = user.chat_id
+
+        # form text
+        user_count = User.objects.count()
+        user_registered_count = User.objects.filter(additional_info__ne=None).count()
+        user_not_blocked_count = User.objects.filter(is_blocked=False).count()
+        text = (
+            f"Всього стартануло бот - <b>{user_count}</b>\n"
+            f"Пройшло реєстрацію - <b>{user_registered_count}</b>\n"
+            f"Всього не заблокованих користувачів - <b>{user_not_blocked_count}</b>"
+        )
+
+        markup = self._form_mailing_markup()
+
+        self.send_message(call, text, reply_markup=markup)
+
     def send_company_key(self, call: CallbackQuery, user: User):
         company_id = call.data.split(";")[3]
         company_key = Company.objects.with_id(company_id).token
