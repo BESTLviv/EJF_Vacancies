@@ -33,6 +33,12 @@ class AdminSection(Section):
         elif action == "MailMe":
             self.mail_me_test(user)
 
+        elif action == "MailUnregistered":
+            self.mail_unregistered(user)
+
+        elif action == "MailNonCV":
+            self.mail_non_cv(user)
+
         elif action == "Statistic":
             self.send_statistic(call, user)
 
@@ -169,23 +175,6 @@ class AdminSection(Section):
         company_key = Company.objects.with_id(company_id).token
         self.send_message(call, text=company_key)
 
-    def send_mailing_menu(self, call: CallbackQuery, user: User):
-        chat_id = user.chat_id
-
-        # form text
-        user_count = User.objects.count()
-        user_registered_count = User.objects.filter(additional_info__ne=None).count()
-        user_not_blocked_count = User.objects.filter(is_blocked=False).count()
-        text = (
-            f"Всього стартануло бот - <b>{user_count}</b>\n"
-            f"Пройшло реєстрацію - <b>{user_registered_count}</b>\n"
-            f"Всього не заблокованих користувачів - <b>{user_not_blocked_count}</b>"
-        )
-
-        markup = self._form_mailing_markup()
-
-        self.send_message(call, text, reply_markup=markup)
-
     def send_statistic(self, call: CallbackQuery, user: User):
         self.answer_in_development(call)
 
@@ -227,7 +216,7 @@ class AdminSection(Section):
             user.chat_id, self._process_mail_users, auditory="all", user=user
         )
 
-    def mail_me_test(self, user):
+    def mail_me_test(self, user: User):
         text = (
             "Надішли повідомлення для тесту і я надішлю тобі його кінцевий вигляд\n\n"
             "Якщо потрібно вставити кнопку-посилання, то в останньому рядку тексту напиши посилання формату <b>https... ->btn_name</b>"
@@ -236,6 +225,28 @@ class AdminSection(Section):
         self.bot.send_message(user.chat_id, text=text)
         self.bot.register_next_step_handler_by_chat_id(
             user.chat_id, self._process_mail_users, auditory="me", user=user
+        )
+
+    def mail_unregistered(self, user: User):
+        text = (
+            "Надішли повідомлення і я надішлю його всім учасникам які ще не пройшли опитування\n\n"
+            "Якщо потрібно вставити кнопку-посилання, то в останньому рядку тексту напиши посилання формату <b>https... ->btn_name</b>"
+        )
+
+        self.bot.send_message(user.chat_id, text=text)
+        self.bot.register_next_step_handler_by_chat_id(
+            user.chat_id, self._process_mail_users, auditory="unregistered", user=user
+        )
+
+    def mail_non_cv(self, user: User):
+        text = (
+            "Надішли повідомлення і я надішлю його всім учасникам які не загрузили свої CV\n\n"
+            "Якщо потрібно вставити кнопку-посилання, то в останньому рядку тексту напиши посилання формату <b>https... ->btn_name</b>"
+        )
+
+        self.bot.send_message(user.chat_id, text=text)
+        self.bot.register_next_step_handler_by_chat_id(
+            user.chat_id, self._process_mail_users, auditory="no_cv", user=user
         )
 
     def send_message_to_auditory(
@@ -266,18 +277,31 @@ class AdminSection(Section):
         if auditory == "all":
             users = User.objects.filter(additional_info__ne=None)
 
-            counter = 0
-
-            for registered_user in users:
-                if send_message(registered_user, text, photo, markup):
-                    counter += 1
-
-            success_text = f"Повідомлення відправлено {counter} користувачам"
-            self.bot.send_message(chat_id=admin_chat_id, text=success_text)
-
         elif auditory == "me":
-            send_message(user, text, photo, markup)
+            users = [user]
 
+        elif auditory == "unregistered":
+            users = User.objects.filter(additional_info=None)
+
+        elif auditory == "no_cv":
+            users = User.objects.filter(cv_file_id=None, additional_info__ne=None)
+
+        else:
+            self.bot.send_message(
+                chat_id=admin_chat_id, text="шось не так, не та аудиторія"
+            )
+
+        # sending messages
+        counter = 0
+
+        for receiver in users:
+            if send_message(receiver, text, photo, markup):
+                counter += 1
+
+        success_text = f"Повідомлення відправлено {counter} користувачам"
+        self.bot.send_message(chat_id=admin_chat_id, text=success_text)
+
+        # send start markup
         self.send_admin_menu(user)
 
     def _process_mail_users(self, message, **kwargs):
@@ -464,6 +488,20 @@ class AdminSection(Section):
         btn_callback = self.form_admin_callback(action="MailAll", edit=True)
         btn_mail_all = InlineKeyboardButton(btn_text, callback_data=btn_callback)
         markup.add(btn_mail_all)
+
+        # Mail unregistered auditory
+        btn_text = "Розсилка на незареєстрованих"
+        btn_callback = self.form_admin_callback(action="MailUnregistered", edit=True)
+        btn_mail_unregistered = InlineKeyboardButton(
+            btn_text, callback_data=btn_callback
+        )
+        markup.add(btn_mail_unregistered)
+
+        # Mail non cv auditory
+        btn_text = "Розсилка на безсівішних"
+        btn_callback = self.form_admin_callback(action="MailNonCV", edit=True)
+        btn_mail_non_cv = InlineKeyboardButton(btn_text, callback_data=btn_callback)
+        markup.add(btn_mail_non_cv)
 
         # Mail me test
         btn_text = "Перевірити кінцеве повідомлення"
