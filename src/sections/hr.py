@@ -11,8 +11,8 @@ from .section import Section
 from ..objects import vacancy
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-class HR(Section):
 
+class HRSection(Section):
     def __init__(self, data: Data):
         super().__init__(data=data)
 
@@ -24,24 +24,20 @@ class HR(Section):
 
         elif action == "VacInfo":
             pass
-           #show_vacancy(self=user)
-        
-        
+          
         else:
             pass
 
     def process_text(self, text):
         pass
 
-    
     def send_start_menu(self, user: User):
         company = Company.objects.filter()[0]
-        
+
         # my vacancies
         btn_text = "Мої"
         btn_callback = self.form_hr_callback(action="VacList")
         btn_my_vacancies = InlineKeyboardButton(btn_text, btn_callback)
-
 
         self.bot.send_photo()
 
@@ -63,9 +59,7 @@ class HR(Section):
 
     def add_vacancy(self):
         pass
-    
-    def show_vacancy(self ):
-        pass
+
 
     def show_vacancy_stats(self):
         pass
@@ -81,9 +75,6 @@ class HR(Section):
 
     def change_vacancy_status(self, current_status: int):
         pass
-
-
-
 
     def quit_company_status(self, chat_id):
         pass
