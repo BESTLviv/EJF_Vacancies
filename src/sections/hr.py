@@ -22,7 +22,7 @@ class HR(Section):
         if action == "VacList":
             self.send_vacany_list(user)
 
-        elif action == "vacInfo":
+        elif action == "VacInfo":
             pass
            #show_vacancy(self=user)
         
@@ -45,25 +45,20 @@ class HR(Section):
 
         self.bot.send_photo()
 
-
-    
-
-    def send_vacancy_list(self, user: User):
+    def send_vacancy_list(self, user: User, call: CallbackQuery=None):
         vac_text = 'Вакансії'
         
+        company = Company.objects.filter(HR=user).first()
+        vacancy_list = Vacancy.objects.filter(company=company).first()
+        
         keyboard = InlineKeyboardMarkup()
-        vacancy_list = Vacancy.objects.filter()
-        self.data.add_test_company_with_vacancies()
         for vacancy in vacancy_list:
            button_text = vacancy.name
-           callback = self.form_hr_callback(action="vacInfo" , vacancy_id=vacancy.id)
-           vacancy_button = InlineKeyboardButton(button_text ,  callback_data=callback)
+           callback = self.form_hr_callback(action="VacInfo", vacancy_id=vacancy.id, new=True)
+           vacancy_button = InlineKeyboardButton(button_text,  callback_data=callback)
            keyboard.add(vacancy_button)
         
-        self.bot.send_message(user.chat_id, vac_text, reply_markup=keyboard)
-
-
-        
+        self.send_message(call, vac_text, reply_markup=keyboard)        
         
 
     def add_vacancy(self):
