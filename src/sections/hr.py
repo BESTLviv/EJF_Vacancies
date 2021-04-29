@@ -1,7 +1,8 @@
 from telebot.types import CallbackQuery
 
-from ..data import Data, User, Company
+from ..data import Data, User, Company, Vacancy
 from .section import Section
+from ..objects import vacancy
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
@@ -12,12 +13,26 @@ class HRSection(Section):
     def process_callback(self, call: CallbackQuery, user: User):
         action = call.data.split(";")[1]
 
-        if action == "VacList":
-            self.send_vacany_list(user)
+        if action == "StartMenu":
+            self.send_start_menu(user, call)
 
+<<<<<<< HEAD
         elif action == "aplication_details":
             chat_id =  call.data.split(";")[2]
             self.send_aplication_detail(user,chat_id)
+=======
+        elif action == "VacList":
+            self.send_vacancy_list(user, call)
+
+        elif action == "CompanyInfo":
+            pass
+
+        elif action == "QuitHR":
+            pass
+
+        elif action == "VacInfo":
+            pass
+>>>>>>> 5c95bfa376ca10de53f6c427f3cfae0a8ec4691e
 
         else:
             pass
@@ -25,6 +40,7 @@ class HRSection(Section):
     def process_text(self, text):
         pass
 
+<<<<<<< HEAD
     def send_start_menu(self, user: User):
         company = Company.objects.filter()[0]
 
@@ -41,28 +57,93 @@ class HRSection(Section):
         self.bot.send_document(chat_id,document= user.cv_file_id)
 
     def send_vacany_list(self, user: User):
+=======
+    def register_hr(self, user: User):
+>>>>>>> 5c95bfa376ca10de53f6c427f3cfae0a8ec4691e
         pass
 
-    def add_vacancy(self):
-        pass
+    def send_start_menu(self, user: User, call: CallbackQuery = None):
+        company = Company.objects.filter(HR=user).first()
 
-    def show_vacancy(self):
-        pass
+        text = "Привіт HR!"
+        photo = company.photo_id
+        start_markup = self._form_start_markup(user)
 
-    def show_vacancy_stats(self):
-        pass
+        if call is None:
+            self.bot.send_photo(
+                chat_id=user.chat_id,
+                caption=text,
+                photo=photo,
+                reply_markup=start_markup,
+            )
+        else:
+            self.send_message(call, text=text, photo=photo, reply_markup=start_markup)
 
-    def show_vacancy_promotion(self):
-        pass
+    def send_vacancy_list(self, user: User, call: CallbackQuery):
+        company = Company.objects.filter(HR=user).first()
 
-    def promote_vacancy(self, to_global=False, to_category=False):
-        pass
+        vac_text = "Вакансії"
+        company_photo = company.photo_id
+        vac_list_markup = self._form_vac_list_markup(user, company)
 
-    def delete_vacancy(self):
-        pass
+        self.send_message(
+            call, vac_text, photo=company_photo, reply_markup=vac_list_markup
+        )
 
-    def change_vacancy_status(self, current_status: int):
-        pass
+    def _form_start_markup(self, user: User) -> InlineKeyboardMarkup:
+        start_markup = InlineKeyboardMarkup()
 
-    def quit_company_status(self, chat_id):
-        pass
+        # my vacancies
+        btn_text1 = "Мої вакансії"
+        btn_callback_vaclist = self.form_hr_callback(action="VacList", edit=True)
+        btn_my_vacancies = InlineKeyboardButton(
+            btn_text1, callback_data=btn_callback_vaclist
+        )
+        start_markup.add(btn_my_vacancies)
+
+        # my company
+        btn_text2 = "Моя компанія"
+        btn_callback_company = self.form_hr_callback(action="CompanyInfo", edit=True)
+        btn_my_company = InlineKeyboardButton(
+            btn_text2, callback_data=btn_callback_company
+        )
+        start_markup.add(btn_my_company)
+
+        # quit hr
+        btn_text3 = "Вийти з профілю компанії"
+        btn_callback_sign_out = self.form_hr_callback(action="QuitHR", edit=True)
+        btn_sign_out_from_company = InlineKeyboardButton(
+            btn_text3, callback_data=btn_callback_sign_out
+        )
+        start_markup.add(btn_sign_out_from_company)
+
+        return start_markup
+
+    def _form_vac_list_markup(
+        self, user: User, company: Company
+    ) -> InlineKeyboardMarkup:
+        vac_list_markup = InlineKeyboardMarkup()
+
+        vacancy_list = Vacancy.objects.filter(company=company)
+
+        # Every vacancy list
+        for vacancy in vacancy_list:
+            button_text = vacancy.name
+            callback = self.form_hr_callback(
+                action="VacInfo", vacancy_id=vacancy.id, new=True
+            )
+            vacancy_button = InlineKeyboardButton(button_text, callback_data=callback)
+            vac_list_markup.add(vacancy_button)
+
+        # Add new vacancy btn
+        btn_text = "Добавити нову"
+        btn_callback = self.form_hr_callback(action="AddVacancy", edit=True)
+        btn_new_vacancy = InlineKeyboardButton(btn_text, callback_data=btn_callback)
+        vac_list_markup.add(btn_new_vacancy)
+
+        # Back button
+        btn_callback = self.form_hr_callback(action="StartMenu", edit=True)
+        btn_back = self.create_back_button(btn_callback)
+        vac_list_markup.add(btn_back)
+
+        return vac_list_markup

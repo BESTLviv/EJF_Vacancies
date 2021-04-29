@@ -2,7 +2,12 @@ from ..data import Data, User, Quiz, Question
 from ..staff import utils
 
 from telebot import TeleBot
-from telebot.types import Message, KeyboardButton, ReplyKeyboardMarkup
+from telebot.types import (
+    Message,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+)
 
 from typing import Iterator, Callable
 from time import sleep
@@ -30,7 +35,7 @@ def start_starting_quiz(user: User, bot: TeleBot, final_func: Callable):
     quiz_iterator = iter(start_quiz_questions)
     question = next(quiz_iterator)
 
-    sleep(4)
+    sleep(2)
 
     send_question(
         user,
@@ -112,6 +117,10 @@ def process_message(message: Message, **kwargs):
     content_type = message.content_type
 
     try:
+        # handle command input
+        if _handle_commands(message) is True:
+            return
+
         if content_type == question.input_type:
 
             if content_type == "text":
@@ -149,7 +158,11 @@ def process_message(message: Message, **kwargs):
 
             # if answer was valid - send message about it
             if question.correct_answer_message:
-                bot.send_message(user.chat_id, text=question.correct_answer_message)
+                bot.send_message(
+                    user.chat_id,
+                    text=question.correct_answer_message,
+                    reply_markup=ReplyKeyboardRemove(),
+                )
                 sleep(0.5)
 
             # next question
@@ -208,10 +221,19 @@ def _create_answer_markup(question: Question) -> ReplyKeyboardMarkup:
     return answer_markup
 
 
-def _handle_commands(message: Message, command_text: str):
+def _handle_commands(message: Message) -> bool:
+    """
+    return True if need to interrupt current quiz
+    """
+    # TODO handle every command and check if quiz is interruptable
 
-    if command_text == "\start":
-        pass
+    if message.content_type == "text":
+        command_text = message.text
+
+        if command_text[0] == "/":
+            raise InputException
+
+    return False
 
 
 def _save_answers_to_user(user: User, container):

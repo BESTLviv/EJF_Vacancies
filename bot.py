@@ -57,20 +57,26 @@ def start_bot(message):
     user = updater.update_user_interaction_time(message)
 
     # If it is the first start
-    if user.additional_info is None:
-        send_welcome_message_and_start_quiz(user)
+    try:
+        if user.additional_info is None:
+            send_welcome_message_and_start_quiz(user)
 
-    # If in Job Fair mode
-    elif user.last_interaction_date < data.JOB_FAIR_END_TIME:
-        job_fair_section.send_start_menu(user)
+        # If in Job Fair mode
+        # TODO fix it later
+        # elif user.last_interaction_date < data.JOB_FAIR_END_TIME:
+        #    job_fair_section.send_start_menu(user)
 
-    # If user is HR
-    elif user.hr_status is True:
-        hr_section.send_start_menu(user=user)
+        # If user is HR
+        elif user.hr_status is True:
+            hr_section.send_start_menu(user=user)
 
-    # If user is basic user
-    else:
-        user_section.send_start_menu(user=user)
+        # If user is basic user
+        else:
+            job_fair_section.send_start_menu(user)
+            # user_section.send_start_menu(user=user)
+
+    except Exception as e:
+        print(f"Exception during start - {e}")
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -137,10 +143,17 @@ def test_save_cv(message):
         bot.send_message(chat_id, text="Приймаю тільки файли формату pdf")
 
     else:
+        if user.cv_file_id is not None:
+            answer = "Дякую, я оновив твоє резюме!"
+        else:
+            answer = "Дякую, зберіг!"
+
         user.cv_file_id = file_id
         user.cv_file_name = file_name
         user.save()
-        bot.send_message(chat_id, text=f"Дякую {user.name}!")
+
+        bot.send_message(chat_id, text=answer)
+
         print(f"{user.name} загрузив {file_name} розміром {file_size/(1024**2)} МБ")
 
 
@@ -150,13 +163,15 @@ def send_welcome_message_and_start_quiz(user: User):
     welcome_photo = ejf.content.start_photo
     bot.send_photo(user.chat_id, photo=welcome_photo, caption=welcome_text)
 
-    # if Job Fair not ended
-    if user.last_interaction_date < data.JOB_FAIR_END_TIME:
-        final_func = job_fair_section.send_start_menu
+    final_func = job_fair_section.send_start_menu
 
-    # if Job Fair ended
-    else:
-        final_func = user_section.send_start_menu
+    # if Job Fair not ended
+    # if user.last_interaction_date < data.JOB_FAIR_END_TIME:
+    #    final_func = job_fair_section.send_start_menu
+    #
+    ## if Job Fair ended
+    # else:
+    #    final_func = user_section.send_start_menu
 
     quiz.start_starting_quiz(user, bot, final_func)
 

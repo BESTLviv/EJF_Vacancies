@@ -1,5 +1,5 @@
 from typing import Iterator
-from ..data import User, Vacancy
+from ..data import User, Vacancy, Data
 
 
 def add_vacancy():
@@ -74,8 +74,7 @@ def finish_add_vacancy(next_step: Iterator = None):
     pass
 
 
-def form_vacancy_info(vacancy_id) -> str:
-    vacancy = Vacancy.objects.with_id(vacancy_id)
+def form_vacancy_info(vacancy: Vacancy) -> str:
 
     vacancy_description = (
         f"{vacancy.name}\n"
@@ -85,3 +84,36 @@ def form_vacancy_info(vacancy_id) -> str:
     )
 
     return vacancy_description
+
+
+def delete_vacancy(call) -> str:
+    vacancy_id = call.data.split(";")[4]
+    vacancy = Vacancy.objects.with_id(vacancy_id)
+
+    vacancy_company = vacancy.company
+
+    try:
+        vacancy.delete()
+        result = "Вакансію успішно видалено!"
+        vacancy_company.vacancy_counter -= 1
+    except:
+        result = "Щось пішло не так :("
+
+    return result
+
+
+def change_vacancy_status(call) -> str:
+    vacancy_id = call.data.split(";")[4]
+    vacancy = Vacancy.objects.with_id(vacancy_id)
+
+    if vacancy.is_active == True:
+        vacancy.is_active = False
+        result = "Вакансію вимкнено."
+
+    elif vacancy.is_active == False:
+        vacancy.is_active = True
+        result = "Вакансію увімкнено."
+
+    vacancy.save()
+
+    return result
