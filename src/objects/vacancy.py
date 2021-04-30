@@ -74,7 +74,9 @@ def finish_add_vacancy(next_step: Iterator = None):
     pass
 
 
-def form_vacancy_info(status: str, vacancy: Vacancy) -> str:
+def form_vacancy_info(status: bool, vacancy: Vacancy):
+
+    vacancy_photo = vacancy.company.photo_id
 
     vacancy_description = (
         f"{vacancy.name}\n"
@@ -84,15 +86,14 @@ def form_vacancy_info(status: str, vacancy: Vacancy) -> str:
         f"<b>Опис</b>: \n{vacancy.description}\n"
     )
 
-    if status == "HR" or status == "Admin":
-# TODO WTF
+    if status:
         if vacancy.is_active:
-            is_active = "Увімкнено"
+            is_active = "Активовано"
             vacancy_description += (
                 f"<b>Вакансія дезактивується через: </b>: {vacancy.active_days_left} днів\n"
                 )
         else:
-            is_active = "Вимкнено"
+            is_active = "Дезактивовано"
 
         vacancy_description += (
             f"<b>Статус</b>: {is_active}\n"
@@ -100,7 +101,7 @@ def form_vacancy_info(status: str, vacancy: Vacancy) -> str:
             f"<b>Оновлено</b>: {vacancy.last_update_date}\n"
             )
 
-    return vacancy_description
+    return vacancy_photo, vacancy_description
 
 
 def delete_vacancy(call) -> str:
@@ -119,19 +120,6 @@ def delete_vacancy(call) -> str:
     return result
 
 
-def change_vacancy_status(vacancy: Vacancy) -> bool:
-    try:
-        if vacancy.is_active == True:
-            vacancy.is_active = False
-
-        elif vacancy.is_active == False:
-            vacancy.is_active = True
-
-        vacancy.save()
-
-        result = True
-
-    except:
-        result = False
-    
-    return result
+def change_vacancy_status(vacancy: Vacancy):
+    vacancy.is_active = False if vacancy.is_active else True
+    vacancy.save()

@@ -129,7 +129,7 @@ class AdminSection(Section):
         for vacancy in vacancy_list:
             vacancy_text = vacancy.name
             vacancy_callback = self.form_admin_callback(
-                action="VacancyInfo", vacancy_id=vacancy.id, edit=True
+                action="VacancyInfo", vacancy_id=vacancy.id, new=True
             )
             vacancy_button = InlineKeyboardButton(
                 text=vacancy_text, callback_data=vacancy_callback
@@ -143,15 +143,13 @@ class AdminSection(Section):
         self.send_message(call, text=text, reply_markup=vacancy_list_markup)
 
     def send_vacancy_info(self, call: CallbackQuery, user: User):
-        status = call.data.split(";")[0]
-
         vacancy_id = call.data.split(";")[4]
         vac = Vacancy.objects.with_id(vacancy_id)
 
-        vacancy_description = vacancy.form_vacancy_info(status=status, vacancy=vac)
+        (vacancy_photo, vacancy_description) = vacancy.form_vacancy_info(status=True, vacancy=vac)
         markup = self._form_vacancy_menu_markup(vacancy_id)
 
-        self.send_message(call, vacancy_description, reply_markup=markup)
+        self.send_message(call, photo=vacancy_photo, text=vacancy_description, reply_markup=markup)
 
     def delete_vacancy(self, call: CallbackQuery, user: User):
         result = vacancy.delete_vacancy(call)
@@ -159,13 +157,11 @@ class AdminSection(Section):
 
     def change_vacancy_status(self, call: CallbackQuery, user: User):
         vacancy_id = call.data.split(";")[4]
-        vac = Vacancy.objects.with_id(vacancy_id)
 
-        result = vacancy.change_vacancy_status(vac)
-        if result:
-            self.send_vacancy_info(call, user)
-        else:
-            self.send_message(call, text="Щось пішло не так :(")
+        vac = Vacancy.objects.with_id(vacancy_id)
+        vacancy.change_vacancy_status(vac)
+
+        self.send_vacancy_info(call, user)
 
     def send_vacancy_statistics(self, call: CallbackQuery, user: User):
         # TODO
@@ -485,11 +481,11 @@ class AdminSection(Section):
         # on\off
         vacancy = Vacancy.objects.with_id(vacancy_id)
         if vacancy.is_active:
-            btn_text = "Вимкнути"
+            btn_text = "Дезактивувати"
         else:
-            btn_text = "Увімкнути"
+            btn_text = "Активувати"
         btn_callback = self.form_admin_callback(
-            action="ChangeVacancyStatus", vacancy_id=vacancy_id, new=True
+            action="ChangeVacancyStatus", vacancy_id=vacancy_id, edit=True
         )
         change_state_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
         vacancy_menu_markup.add(change_state_btn)
