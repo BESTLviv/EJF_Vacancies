@@ -18,14 +18,14 @@ class UserSection(Section):
     TEXT_BUTTONS = ["Найти вакансію", "Хто ми?", "Профіль"]
 
     def __init__(self, data: Data):
-        super().__init__(data=data)
+        super().__init__(data= data)
 
     def process_callback(self, call: CallbackQuery, user: User):
         action = call.data.split(";")[1]
 
         if action == "ApplyCV":
             vacancy_id = call.data.split(";")[3]
-            self.apply_for_vacancy(user, vacancy_id, cv=True)
+            self.apply_for_vacancy(call,user,vacancy_id,True)
 
         elif action == "VacInfo":
             vacancy_id = call.data.split(";")[3]
@@ -84,27 +84,28 @@ class UserSection(Section):
         self.bot.send_message(user.chat_id, text="Test")
 
     def apply_for_vacancy(
-        self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
+        self, call: CallbackQuery, user: User, vacancy_id, cv=True
     ):
         # TODO do apply for vacancy(LOGS for checking if the user already applied)
-        
-        self.bot.send_message(user.chat_id, text="Заявку надіслано.")
-
-        chat_id = Vacancy.objects.with_id(vacancy_id).company.HR.chat_id
-        vacancy_name = Vacancy.objects.with_id(vacancy_id).name
+        vacancy_obj = Vacancy.objects.with_id(vacancy_id)
+        hr_chat_id = vacancy_obj.company.HR.chat_id
+        vacancy_name = vacancy_obj.name
 
         detail_markup = InlineKeyboardMarkup()
-        detail_text = "Побачити деталі..."
+        detail_text = "Побачити деталі"
         detail_callback = self.form_hr_callback(
-            action="aplication_details", user_id=chat_id, edit=True
+            action="AplicationDetails", user_id=user.id, vacancy_id=vacancy_id
         )
-        detail = InlineKeyboardButton(text=detail_text, callback_data=detail_callback)
-        detail_markup.add(detail)
+        detail_button = InlineKeyboardButton(text=detail_text, callback_data=detail_callback)
+        detail_markup.add(detail_button)
 
         user.apply_counter= user.apply_counter-1
         user.save()
 
-        self.bot.send_message(chat_id,text = "Нова заявка на {vacancy_name}!".format(vacancy_name), reply_markup= detail_markup)
+        self.send_message(user.chat_id, text="Заявку надіслано.")
+        self.send_message(hr_chat_id, text="test", reply_markup=detail_markup)
+        # self.bot.send_message(hr_chat_id,text ="Нова заявка на {vacancy_name}!".format(vacancy_name))
+        
         
 
 
