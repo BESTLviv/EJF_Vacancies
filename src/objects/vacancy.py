@@ -74,16 +74,34 @@ def finish_add_vacancy(next_step: Iterator = None):
     pass
 
 
-def form_vacancy_info(vacancy: Vacancy) -> str:
+def form_vacancy_info(status: bool, vacancy: Vacancy):
+
+    vacancy_photo = vacancy.company.photo_id
 
     vacancy_description = (
         f"{vacancy.name}\n"
-        f"<b>Досвід - </b>: {vacancy.experience}\n"
+        f"<b>Досвід</b>: {vacancy.experience}\n"
+        f"<b>Зарплата</b>: {vacancy.salary}\n"
+        f"<b>Робочий день</b>: {vacancy.employment_type}\n"
         f"<b>Опис</b>: \n{vacancy.description}\n"
-        f"<b>Вакансія дезактивується через: </b>: {vacancy.active_days_left} днів\n"
     )
 
-    return vacancy_description
+    if status:
+        if vacancy.is_active:
+            is_active = "Активовано"
+            vacancy_description += (
+                f"<b>Вакансія дезактивується через: </b>: {vacancy.active_days_left} днів\n"
+                )
+        else:
+            is_active = "Дезактивовано"
+
+        vacancy_description += (
+            f"<b>Статус</b>: {is_active}\n"
+            f"<b>Додано</b>: {vacancy.add_date}\n"
+            f"<b>Оновлено</b>: {vacancy.last_update_date}\n"
+            )
+
+    return vacancy_photo, vacancy_description
 
 
 def delete_vacancy(call) -> str:
@@ -102,18 +120,6 @@ def delete_vacancy(call) -> str:
     return result
 
 
-def change_vacancy_status(call) -> str:
-    vacancy_id = call.data.split(";")[4]
-    vacancy = Vacancy.objects.with_id(vacancy_id)
-
-    if vacancy.is_active == True:
-        vacancy.is_active = False
-        result = "Вакансію вимкнено."
-
-    elif vacancy.is_active == False:
-        vacancy.is_active = True
-        result = "Вакансію увімкнено."
-
+def change_vacancy_status(vacancy: Vacancy):
+    vacancy.is_active = False if vacancy.is_active else True
     vacancy.save()
-
-    return result
