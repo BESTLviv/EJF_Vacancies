@@ -268,7 +268,7 @@ class AdminSection(Section):
                     self.bot.send_message(receiver.chat_id, text, reply_markup=markup)
                 return True
             except Exception as e:
-                err_text = f"User {receiver.username} {receiver.chat_id} didn't receive message - {e}"
+                err_text = f"User @{receiver.username} {receiver.chat_id} didn't receive message - {e}"
                 logger.error(err_text)
                 self.bot.send_message(chat_id=admin_chat_id, text=err_text)
                 receiver.is_blocked = True
