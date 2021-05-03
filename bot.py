@@ -54,19 +54,6 @@ updater = Updater()
 def start_bot(message):
     user = updater.update_user_interaction_time(message)
 
-    # data.add_test_company_with_vacancies(
-    #    user=user,
-    #    vacancies_number=5,
-    #    company_name="SoftServe",
-    #    photo="https://ua-rating.com/wp-content/uploads/2019/09/snimok-ekrana-2019-09-26-v-12.05.11-696x466.jpg",
-    # )
-    # data.add_test_company_with_vacancies(
-    #    user=user,
-    #    vacancies_number=5,
-    #    company_name="Epam",
-    #    photo="https://www.epam-group.ru/etc/designs/epam-core/images/common/logo.png",
-    # )
-
     # If it is the first start
     try:
         if user.additional_info is None:

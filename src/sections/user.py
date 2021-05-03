@@ -83,6 +83,7 @@ class UserSection(Section):
             Резюме не закинув, тому вакансій для тебе немає, дОпобАчення!
             Підеш в Глово)
         """
+        text_message += self._form_profile_vacancy_count_text(user)
 
         criteria_markup = InlineKeyboardMarkup()
         interest_but = InlineKeyboardButton(
@@ -122,7 +123,7 @@ class UserSection(Section):
         experience=False,
         employment=False,
     ):
-        text = "Hello"
+        text = str()
         markup = InlineKeyboardMarkup()
 
         ejf = JobFair.objects.first()
@@ -143,6 +144,8 @@ class UserSection(Section):
         back_btn_callback = self.form_user_callback(action="Profile", edit=True)
         back_btn = self.create_back_button(back_btn_callback)
         markup.add(back_btn)
+
+        text += self._form_profile_vacancy_count_text(user=user)
 
         self.send_message(call, text=text, reply_markup=markup)
 
@@ -259,3 +262,11 @@ class UserSection(Section):
         apply_markup.add(btn_prev, btn_counter, btn_next)
 
         return apply_markup
+
+    def _form_profile_vacancy_count_text(self, user: User) -> str:
+
+        vacancies = self._get_vacancy_list_by_filters(user)
+
+        return (
+            f"\nЗа вибраними критеріями знайдено вакансій - <b>{vacancies.count()}</b>"
+        )
