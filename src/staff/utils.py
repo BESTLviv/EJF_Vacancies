@@ -8,6 +8,7 @@ import requests
 import tempfile
 import shutil
 import os
+import time
 from datetime import datetime
 
 
@@ -124,6 +125,17 @@ def delete_message(bot: TeleBot, call: CallbackQuery):
 
     except:
         bot.answer_callback_query(call.id, text="Щоб продовжити натискай на /start")
+
+
+def time_check(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        rest = func(*args, **kwargs)
+        end = time.time()
+        print(f"Час виконання {(end - start):.4} секунд")
+        return rest
+
+    return wrapper
 
 
 #

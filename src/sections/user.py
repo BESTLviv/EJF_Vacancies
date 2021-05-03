@@ -20,6 +20,15 @@ class UserSection(Section):
     def __init__(self, data: Data):
         super().__init__(data=data)
 
+    # def process_callback(self, call: CallbackQuery, user: User):
+    #
+    #    main_info = JobFair.objects[0]
+    #    self.all_interests, self.all_experience, self.all_employment = (
+    #        main_info.filters_interest,
+    #        main_info.filters_experience,
+    #        main_info.filters_employment,
+    #    )
+
     def process_callback(self, call: CallbackQuery, user: User):
         action = call.data.split(";")[1]
 
@@ -32,11 +41,22 @@ class UserSection(Section):
             vac, vacancy_index = self._get_vac_index(vacancy_id)
             self.send_vacancy_info(user, vac, vacancy_index, call)
 
-        elif action == "Interests":
-            self.send_interests(user)
+        elif action == "Profile":
+            self.send_profile_menu(user, call)
 
+        elif action == "Interests":
+            self.send_filters_menu(call, user, interest=True)
+
+        elif action == "Experience":
+            self.send_filters_menu(call, user, experience=True)
+
+        elif action == "Employment":
+            self.send_filters_menu(call, user, employment=True)
+            
         else:
             self.answer_wrong_action(call)
+
+        self.bot.answer_callback_query(call.id)
 
     def process_text(self, text: str, user: User):
 
@@ -67,11 +87,79 @@ class UserSection(Section):
             reply_markup=markup,
         )
 
-    def send_interests(self, user: User):
-        pass
+    def send_profile_menu(self, user: User, call: CallbackQuery = None):
+        text_message = """
+            Налаштуй критерії, сучка 😈.
+            
+            Резюме не закинув, тому вакансій для тебе немає, дОпобАчення!
+            Підеш в Глово)
+        """
 
-    def begin_start_quiz(self):
-        pass
+        criteria_markup = InlineKeyboardMarkup()
+        interest_but = InlineKeyboardButton(
+            text="Інтереси",
+            callback_data=self.form_user_callback(action="Interests", edit=True),
+        )
+        experience_but = InlineKeyboardButton(
+            text="Досвід",
+            callback_data=self.form_user_callback(action="Experience", edit=True),
+        )
+        employ_but = InlineKeyboardButton(
+            text="Зайнятість",
+            callback_data=self.form_user_callback(action="Employment", edit=True),
+        )
+        cv_but = InlineKeyboardButton(
+            text="Резюме",
+            callback_data=self.form_user_callback(action="CV", edit=True),
+        )
+
+        criteria_markup.add(interest_but)
+        criteria_markup.add(experience_but)
+        criteria_markup.add(employ_but)
+        criteria_markup.add(cv_but)
+
+        if call is None:
+            self.bot.send_message(
+                chat_id=user.chat_id, text=text_message, reply_markup=criteria_markup
+            )
+        else:
+            self.send_message(call, text=text_message, reply_markup=criteria_markup)
+
+    def send_filters_menu(
+        self,
+        call: CallbackQuery,
+        user: User,
+        interest=False,
+        experience=False,
+        employment=False,
+    ):
+        text = "Hello"
+        markup = InlineKeyboardMarkup()
+
+        ejf = JobFair.objects.first()
+
+        if interest:
+            interests.update_user(call, user.interests, ejf.filters_interest)
+            markup = interests.create_interests_markup(user)
+
+        elif experience:
+            interests.update_user(
+                call, user.experience, ejf.filters_experience, only_one=True
+            )
+            markup = interests.create_experience_markup(user)
+
+        elif employment:
+            interests.update_user(call, user.employment, ejf.filters_employment)
+            markup = interests.create_employment_markup(user)
+
+        # Back button
+        back_btn_callback = self.form_user_callback(action="Profile", edit=True)
+        back_btn = self.create_back_button(back_btn_callback)
+        markup.add(back_btn)
+
+        self.send_message(call, text=text, reply_markup=markup)
+
+        user.save()
 
     def send_new_vacancy(self, user: User):
         vacancies_count = len(Vacancy.objects)
@@ -88,9 +176,6 @@ class UserSection(Section):
     ):
         # TODO do apply for vacancy
         pass
-
-    def send_profile_menu(self, user: User):
-        self.bot.send_message(user.chat_id, text="Test")
 
     def change_account_type(self, user: User):
         pass
