@@ -56,9 +56,6 @@ updater = Updater()
 def start_bot(message):
     user = updater.update_user_interaction_time(message)
 
-    user_section.send_start_menu(user=user)
-    return
-
     # If it is the first start
     try:
         if user.additional_info is None:
