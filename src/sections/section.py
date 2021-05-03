@@ -121,11 +121,13 @@ class Section:
                 # edit caption + photo
                 elif photo and call.message.content_type == "photo":
                     # if photo was edited
-                    if call.message.photo[0].file_id == photo:
+                    if call.message.photo[0].file_id != photo:
                         self.bot.edit_message_media(
                             chat_id=chat_id,
                             message_id=message_id,
-                            media=InputMediaPhoto(photo, caption=text),
+                            media=InputMediaPhoto(
+                                photo, caption=text, parse_mode="HTML"
+                            ),
                             reply_markup=reply_markup,
                         )
                     # if text was edited

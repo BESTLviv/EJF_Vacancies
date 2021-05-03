@@ -41,11 +41,13 @@ class Data:
         #    user.additional_info = None
         #    user.save()
 
-    def add_test_company_with_vacancies(self, user, vacancies_number=2):
+    def add_test_company_with_vacancies(
+        self, user, vacancies_number=2, photo=None, company_name=None
+    ):
 
         # company
-        name = self._generate_string()
-        photo_id = self.TEST_PHOTO
+        name = self._generate_string() if company_name is None else company_name
+        photo_id = self.TEST_PHOTO if photo is None else photo
         description = self._generate_string(long=True)
         vacancy_counter = 20  # ?
         HR = user
@@ -67,10 +69,16 @@ class Data:
         for i in range(vacancies_number):
             company = test_company
             name = self._generate_string()
-            tag = self._generate_string()
+            tag = self.get_ejf().filters_interest[
+                random.randint(0, len(self.get_ejf().filters_interest) - 1)
+            ]
             salary = f"{random.randint(1000, 5000)}$"
-            experience = self._generate_string()
-            employment_type = self._generate_string()
+            experience = self.get_ejf().filters_experience[
+                random.randint(0, len(self.get_ejf().filters_experience) - 1)
+            ]
+            employment_type = self.get_ejf().filters_employment[
+                random.randint(0, len(self.get_ejf().filters_employment) - 1)
+            ]
             description = self._generate_string(long=True)
             add_date = datetime.now(tz=timezone.utc)
             last_update_date = datetime.now(tz=timezone.utc)
