@@ -31,13 +31,6 @@ class UserSection(Section):
 
     def process_callback(self, call: CallbackQuery, user: User):
         action = call.data.split(";")[1]
-        (
-            action,
-            is_selected,
-            interest_index,
-            experience_index,
-            employment_index,
-        ) = call.data.split(";")[1:6]
 
         if action == "ApplyCV":
             vacancy_id = call.data.split(";")[3]
@@ -48,37 +41,22 @@ class UserSection(Section):
             vac, vacancy_index = self._get_vac_index(vacancy_id)
             self.send_vacancy_info(user, vac, vacancy_index, call)
 
-        elif action == "Interests_menu":
-            self.send_interests(call, user)
+        elif action == "Profile":
+            self.send_profile_menu(user, call)
 
-        elif action == "Experience_menu":
-            self.send_experience(user)
+        elif action == "Interests":
+            self.send_filters_menu(call, user, interest=True)
 
-        elif action == "Employment_menu":
-            self.send_employment(user)
+        elif action == "Experience":
+            self.send_filters_menu(call, user, experience=True)
 
-        elif action == "change_interest":
-            self.send_interests(call, user)
-
-        elif action == "change_experience":
-            is_selected = call.data.split(";")[2]
-            if is_selected == "0":
-                user.experience = self.data.ejf.filters_experience[
-                    int(experience_index)
-                ]
-                user.save()
-                self.send_experience(call, user)
-
-        elif action == "change_employment":
-            if is_selected == "0":
-                user.employment = self.data.ejf.filters_employment[
-                    int(employment_index)
-                ]
-                user.save()
-                self.send_employment(call, user)
-
+        elif action == "Employment":
+            self.send_filters_menu(call, user, employment=True)
+            
         else:
             self.answer_wrong_action(call)
+
+        self.bot.answer_callback_query(call.id)
 
     def process_text(self, text: str, user: User):
 
@@ -109,7 +87,7 @@ class UserSection(Section):
             reply_markup=markup,
         )
 
-    def send_profile_menu(self, user: User):
+    def send_profile_menu(self, user: User, call: CallbackQuery = None):
         text_message = """
             Налаштуй критерії, сучка 😈.
             
@@ -120,25 +98,19 @@ class UserSection(Section):
         criteria_markup = InlineKeyboardMarkup()
         interest_but = InlineKeyboardButton(
             text="Інтереси",
-            callback_data=interests.form_user_interests_callback(
-                action="Interests_menu"
-            ),
+            callback_data=self.form_user_callback(action="Interests", edit=True),
         )
         experience_but = InlineKeyboardButton(
             text="Досвід",
-            callback_data=interests.form_user_interests_callback(
-                action="Experience_menu"
-            ),
+            callback_data=self.form_user_callback(action="Experience", edit=True),
         )
         employ_but = InlineKeyboardButton(
-            text="Занятість",
-            callback_data=interests.form_user_interests_callback(
-                action="Employment_menu"
-            ),
+            text="Зайнятість",
+            callback_data=self.form_user_callback(action="Employment", edit=True),
         )
         cv_but = InlineKeyboardButton(
             text="Резюме",
-            callback_data=interests.form_user_interests_callback(action="cv"),
+            callback_data=self.form_user_callback(action="CV", edit=True),
         )
 
         criteria_markup.add(interest_but)
@@ -146,58 +118,48 @@ class UserSection(Section):
         criteria_markup.add(employ_but)
         criteria_markup.add(cv_but)
 
-        self.data.bot.send_message(
-            user.chat_id, text=text_message, reply_markup=criteria_markup
-        )
-
-    def send_interests(self, call: CallbackQuery, user: User):
-        all_interests = self.data.ejf.filters_interest
-        interests.update_interest(call, user, all_interests)
-
-        current_interests = user.interests
-        interest_markup = interests.create_interests_markup(current_interests)
-        if previous_message_id:
-            self.data.bot.edit_message_reply_markup(
-                user.chat_id,
-                message_id=previous_message_id,
-                reply_markup=interest_markup,
+        if call is None:
+            self.bot.send_message(
+                chat_id=user.chat_id, text=text_message, reply_markup=criteria_markup
             )
         else:
-            self.data.bot.send_message(
-                user.chat_id, reply_markup=interest_markup, text="Hello"
-            )
+            self.send_message(call, text=text_message, reply_markup=criteria_markup)
 
-    def send_experience(self, call: CallbackQuery, user: User):
-        current_experience = user.experience
-        experience_markup = interests.create_experience_markup(current_experience)
-        if previous_message_id:
-            self.data.bot.edit_message_reply_markup(
-                user.chat_id,
-                message_id=previous_message_id,
-                reply_markup=experience_markup,
-            )
-        else:
-            self.data.bot.send_message(
-                user.chat_id, reply_markup=experience_markup, text="woooooow"
-            )
-        pass
+    def send_filters_menu(
+        self,
+        call: CallbackQuery,
+        user: User,
+        interest=False,
+        experience=False,
+        employment=False,
+    ):
+        text = "Hello"
+        markup = InlineKeyboardMarkup()
 
-    def send_employment(self, call: CallbackQuery, user: User):
-        current_employment = user.employment
-        employment_markup = interests.create_employment_markup(current_employment)
-        if previous_message_id:
-            self.data.bot.edit_message_reply_markup(
-                user.chat_id,
-                message_id=previous_message_id,
-                reply_markup=employment_markup,
-            )
-        else:
-            self.data.bot.send_message(
-                user.chat_id, reply_markup=employment_markup, text="wooooooooow"
-            )
+        ejf = JobFair.objects.first()
 
-    def begin_start_quiz(self):
-        pass
+        if interest:
+            interests.update_user(call, user.interests, ejf.filters_interest)
+            markup = interests.create_interests_markup(user)
+
+        elif experience:
+            interests.update_user(
+                call, user.experience, ejf.filters_experience, only_one=True
+            )
+            markup = interests.create_experience_markup(user)
+
+        elif employment:
+            interests.update_user(call, user.employment, ejf.filters_employment)
+            markup = interests.create_employment_markup(user)
+
+        # Back button
+        back_btn_callback = self.form_user_callback(action="Profile", edit=True)
+        back_btn = self.create_back_button(back_btn_callback)
+        markup.add(back_btn)
+
+        self.send_message(call, text=text, reply_markup=markup)
+
+        user.save()
 
     def send_new_vacancy(self, user: User):
         vacancies_count = len(Vacancy.objects)

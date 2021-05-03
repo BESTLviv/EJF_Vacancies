@@ -1,130 +1,108 @@
 from ..data import User, JobFair
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    CallbackQuery,
+    Message,
+)
+from ..staff import utils
 
 
-def update_interest(call, user: User, all_interests):
+# @utils.time_check
+def update_user(call: CallbackQuery, user_list, ejf_list, only_one=False):
     is_selected, interest_index = call.data.split(";")[2:4]
 
-    current_interests = list(user.interests)
-    for index, interest in enumerate(all_interests):
+    if only_one and interest_index:
+        user_list.clear()
+        user_list.append(ejf_list[int(interest_index)])
+        return
+
+    for index, interest in enumerate(ejf_list):
         if interest_index == str(index):
             if is_selected == "0":  # not yet exists
-                current_interests.append(interest)
+                user_list.append(interest)
             else:
-                current_interests.remove(interest)
+                user_list.remove(interest)
             break
-    user.interests = current_interests
-    user.save()
 
 
-def update_items_list(current_items, right_index, is_selected, all):
-    for index, interest in enumerate(all):
-        if right_index == str(index):
-            if is_selected == "0":  # not yet exists
-                current_items.append(interest)
-            else:
-                current_items.remove(interest)
-            return current_items
+# @utils.time_check
+def create_interests_markup(user: User, col_number: int = 3):
+    all_interests = JobFair.objects.first().filters_interest
 
-
-def create_interests_markup(current_interests):
-    ROW_SIZE = 2
-    all_interests = JobFair.objects[0].filters_interest
     interest_markup = InlineKeyboardMarkup()
 
-    number_count = 0
-    interest_row = []
-    for index, interest in enumerate(all_interests):
-        interest_edited = interest + "✅" if interest in current_interests else interest
-        is_selected = "1" if interest in current_interests else "0"
+    for row in inline_keyboard_columns_generator(
+        callback_action="Interests",
+        user_list=user.interests,
+        ejf_list=all_interests,
+        col=col_number,
+    ):
+        interest_markup.add(*row)
 
-        callback = form_user_interests_callback(
-            action="change_interest", is_selected=is_selected, interest_index=str(index)
-        )
-        interest_but = InlineKeyboardButton(
-            text=interest_edited, callback_data=callback
-        )
-        interest_row.append(interest_but)
-
-        number_count += 1
-        if number_count == ROW_SIZE:
-            number_count = 0
-            interest_markup.add(*interest_row)
-            interest_row = []
     return interest_markup
 
 
-def create_experience_markup(current_experience):
-    ROW_SIZE = 3
-    all_experience = JobFair.objects[0].filters_experience
+def create_experience_markup(user: User, col_number: int = 3):
+    all_experience = JobFair.objects.first().filters_experience
+
     experience_markup = InlineKeyboardMarkup()
 
-    number_count = 0
-    experience_row = []
-    for index, experience in enumerate(all_experience):
-        experience_edited = (
-            experience + "✅" if experience == current_experience else experience
-        )
-        is_selected = "1" if experience in current_experience else "0"
-
-        callback = form_user_interests_callback(
-            action="change_experience",
-            is_selected=is_selected,
-            experience_index=str(index),
-        )
-        experience_but = InlineKeyboardButton(
-            text=experience_edited, callback_data=callback
-        )
-        experience_row.append(experience_but)
-
-        number_count += 1
-        if number_count == ROW_SIZE:
-            number_count = 0
-            experience_markup.add(*experience_row)
-            experience_row = []
+    for row in inline_keyboard_columns_generator(
+        callback_action="Experience",
+        user_list=user.experience,
+        ejf_list=all_experience,
+        col=col_number,
+    ):
+        experience_markup.add(*row)
 
     return experience_markup
 
 
-def create_employment_markup(current_employment):
-    ROW_SIZE = 2
-    all_employment = JobFair.objects[0].filters_employment
+def create_employment_markup(user: User, col_number: int = 3):
+    all_employment = JobFair.objects.first().filters_employment
+
     employment_markup = InlineKeyboardMarkup()
 
-    number_count = 0
-    employment_row = []
-    for index, employment in enumerate(all_employment):
-        employment_edited = (
-            employment + "✅" if employment == current_employment else employment
-        )
-        is_selected = "1" if employment in current_employment else "0"
-
-        callback = form_user_interests_callback(
-            action="change_employment",
-            is_selected=is_selected,
-            employment_index=str(index),
-        )
-        employment_but = InlineKeyboardButton(
-            text=employment_edited, callback_data=callback
-        )
-        employment_row.append(employment_but)
-
-        number_count += 1
-        if number_count == ROW_SIZE:
-            number_count = 0
-            employment_markup.add(*employment_row)
-            employment_row = []
+    for row in inline_keyboard_columns_generator(
+        callback_action="Employment",
+        user_list=user.employment,
+        ejf_list=all_employment,
+        col=col_number,
+    ):
+        employment_markup.add(*row)
 
     return employment_markup
 
 
 def form_user_interests_callback(
-    action,
-    is_selected="",
-    interest_index="",
-    experience_index="",
-    employment_index="",
-    user_id="",
-    prev_msg_action=None,
+    action: str,
+    is_selected: int,
+    index: int,
 ):
-    return f"User;{action};{is_selected};{interest_index};{experience_index};{employment_index};{user_id};{prev_msg_action}"
+    return f"User;{action};{is_selected};{index};Edit"
+
+
+def inline_keyboard_columns_generator(
+    callback_action: str, user_list: list, ejf_list: list, col=2
+):
+    row = []
+
+    for index, btn_name in enumerate(ejf_list, 1):
+        is_selected = 0
+        if btn_name in user_list:
+            btn_name += " ✅"
+            is_selected = 1
+
+        btn_callback = form_user_interests_callback(
+            callback_action, is_selected, index - 1
+        )
+
+        row += [InlineKeyboardButton(btn_name, callback_data=btn_callback)]
+
+        if index % col == 0:
+            yield row
+            row = []
+
+    if row:
+        yield row
