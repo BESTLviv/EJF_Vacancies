@@ -1,17 +1,23 @@
 from telebot.types import Message, KeyboardButton, CallbackQuery
 from telebot import TeleBot
 
+from typing import Callable
+
 from src.data import User, JobFair, Data
 
 
 help_msg = (
     "TEST COMMANDS HELP\n\n"
     "<b>ejf__help</b> - for help message\n"
-    "<b>ejf__resetquiz</b> - full start of bot (with start message and quiz)"
+    "<b>ejf__update</b> - for updating content from Database\n"
+    "<b>ejf__resetquiz</b> - full start of bot (with start message and quiz)\n"
+    "<b>ejf__user</b> - user start menu"
 )
 
 
-def process_tests_text(bot: TeleBot, user: User, data: Data, text: str):
+def process_tests_text(
+    bot: TeleBot, user: User, data: Data, text: str, user_func: Callable
+):
     test_action = text.split("__")[1]
 
     if test_action == "help":
@@ -30,3 +36,6 @@ def process_tests_text(bot: TeleBot, user: User, data: Data, text: str):
         bot.send_message(
             user.chat_id, text="You can now click /start and take a quiz again."
         )
+
+    elif test_action == "user":
+        user_func(user)

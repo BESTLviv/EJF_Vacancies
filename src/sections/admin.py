@@ -146,10 +146,12 @@ class AdminSection(Section):
         vacancy_id = call.data.split(";")[4]
         vac = Vacancy.objects.with_id(vacancy_id)
 
-        (vacancy_photo, vacancy_description) = vacancy.form_vacancy_info(status=True, vacancy=vac)
+        company_photo = vacancy.company.photo_id
+
+        vacancy_description = vacancy.form_vacancy_info(vacancy=vac, status=True)
         markup = self._form_vacancy_menu_markup(vacancy_id)
 
-        self.send_message(call, photo=vacancy_photo, text=vacancy_description, reply_markup=markup)
+        self.send_message(call, photo=company_photo, text=vacancy_description, reply_markup=markup)
 
     def delete_vacancy(self, call: CallbackQuery, user: User):
         result = vacancy.delete_vacancy(call)

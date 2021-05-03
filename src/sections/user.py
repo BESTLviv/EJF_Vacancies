@@ -100,7 +100,7 @@ class UserSection(Section):
     ):
         chat_id = user.chat_id
         vacancy_id = vac.id
-        vacancy_description = vacancy.form_vacancy_info(vac)
+        vacancy_description = vacancy.form_vacancy_info(vacancy=vac, status=False)
         company_photo = vac.company.photo_id
         vacancies_list = list(Vacancy.objects)
         vacancy_info_menu_markup = self._form_vacancy_info_menu_markup(

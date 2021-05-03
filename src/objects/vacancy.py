@@ -74,9 +74,7 @@ def finish_add_vacancy(next_step: Iterator = None):
     pass
 
 
-def form_vacancy_info(status: bool, vacancy: Vacancy):
-
-    vacancy_photo = vacancy.company.photo_id
+def form_vacancy_info(vacancy: Vacancy, status: bool):
 
     vacancy_description = (
         f"{vacancy.name}\n"
@@ -89,9 +87,7 @@ def form_vacancy_info(status: bool, vacancy: Vacancy):
     if status:
         if vacancy.is_active:
             is_active = "Активовано"
-            vacancy_description += (
-                f"<b>Вакансія дезактивується через: </b>: {vacancy.active_days_left} днів\n"
-                )
+            vacancy_description += f"<b>Вакансія дезактивується через: </b>: {vacancy.active_days_left} днів\n"
         else:
             is_active = "Дезактивовано"
 
@@ -99,9 +95,9 @@ def form_vacancy_info(status: bool, vacancy: Vacancy):
             f"<b>Статус</b>: {is_active}\n"
             f"<b>Додано</b>: {vacancy.add_date}\n"
             f"<b>Оновлено</b>: {vacancy.last_update_date}\n"
-            )
+        )
 
-    return vacancy_photo, vacancy_description
+    return vacancy_description
 
 
 def delete_vacancy(call) -> str:

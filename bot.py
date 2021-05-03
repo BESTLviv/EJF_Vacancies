@@ -118,7 +118,9 @@ def handle_text_buttons(message):
             admin_section.send_admin_menu(user=user)
 
         elif message_text.startswith("ejf__"):
-            test_bot.process_tests_text(bot, user, data, message_text)
+            test_bot.process_tests_text(
+                bot, user, data, message_text, user_section.send_start_menu
+            )
 
         else:
             pass  # answer user that it was invalid input (in utils.py maybe)
