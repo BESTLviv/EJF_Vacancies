@@ -23,6 +23,11 @@ class UserSection(Section):
     def process_callback(self, call: CallbackQuery, user: User):
         action = call.data.split(";")[1]
 
+        # check if user is not HR
+        if user.hr_status is True:
+            self.bot.answer_callback_query(call.id, text="HR не має доступу сюди :(")
+            return
+
         if action == "ApplyCV":
             vacancy_id = call.data.split(";")[3]
             self.apply_for_vacancy(user, vacancy_id, cv=True)
@@ -48,6 +53,11 @@ class UserSection(Section):
         self.bot.answer_callback_query(call.id)
 
     def process_text(self, text: str, user: User):
+
+        # check if user is not HR
+        if user.hr_status is True:
+            self.bot.send_message(user.chat_id, text="HR не має доступу сюди :(")
+            return
 
         if text == self.TEXT_BUTTONS[0]:
             self.send_vacancy_info(user, is_random=True)
@@ -85,35 +95,14 @@ class UserSection(Section):
         """
         text_message += self._form_profile_vacancy_count_text(user)
 
-        criteria_markup = InlineKeyboardMarkup()
-        interest_but = InlineKeyboardButton(
-            text="Інтереси",
-            callback_data=self.form_user_callback(action="Interests", edit=True),
-        )
-        experience_but = InlineKeyboardButton(
-            text="Досвід",
-            callback_data=self.form_user_callback(action="Experience", edit=True),
-        )
-        employ_but = InlineKeyboardButton(
-            text="Зайнятість",
-            callback_data=self.form_user_callback(action="Employment", edit=True),
-        )
-        cv_but = InlineKeyboardButton(
-            text="Резюме",
-            callback_data=self.form_user_callback(action="CV", edit=True),
-        )
-
-        criteria_markup.add(interest_but)
-        criteria_markup.add(experience_but)
-        criteria_markup.add(employ_but)
-        criteria_markup.add(cv_but)
+        markup = self._form_profile_menu_markup()
 
         if call is None:
             self.bot.send_message(
-                chat_id=user.chat_id, text=text_message, reply_markup=criteria_markup
+                chat_id=user.chat_id, text=text_message, reply_markup=markup
             )
         else:
-            self.send_message(call, text=text_message, reply_markup=criteria_markup)
+            self.send_message(call, text=text_message, reply_markup=markup)
 
     def send_filters_menu(
         self,
@@ -158,9 +147,6 @@ class UserSection(Section):
         self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
     ):
         # TODO do apply for vacancy
-        pass
-
-    def change_account_type(self, user: User):
         pass
 
     def send_vacancy_info(
@@ -270,3 +256,37 @@ class UserSection(Section):
         return (
             f"\nЗа вибраними критеріями знайдено вакансій - <b>{vacancies.count()}</b>"
         )
+
+    def _form_profile_menu_markup(self) -> InlineKeyboardMarkup:
+        criteria_markup = InlineKeyboardMarkup()
+
+        # Interests button
+        interest_but = InlineKeyboardButton(
+            text="Інтереси",
+            callback_data=self.form_user_callback(action="Interests", edit=True),
+        )
+
+        # Experience button
+        experience_but = InlineKeyboardButton(
+            text="Досвід",
+            callback_data=self.form_user_callback(action="Experience", edit=True),
+        )
+
+        # Employment type button
+        employ_but = InlineKeyboardButton(
+            text="Зайнятість",
+            callback_data=self.form_user_callback(action="Employment", edit=True),
+        )
+
+        # CV button
+        cv_but = InlineKeyboardButton(
+            text="Резюме",
+            callback_data=self.form_user_callback(action="CV", edit=True),
+        )
+
+        criteria_markup.add(interest_but)
+        criteria_markup.add(experience_but)
+        criteria_markup.add(employ_but)
+        criteria_markup.add(cv_but)
+
+        return criteria_markup

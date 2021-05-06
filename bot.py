@@ -109,19 +109,27 @@ def handle_text_buttons(message):
 
     try:
 
+        # User buttons
         if message_text in user_section.TEXT_BUTTONS:
             user_section.process_text(message_text, user)
 
+        # JobFair buttons
         elif message_text in job_fair_section.TEXT_BUTTONS:
             job_fair_section.process_text(message_text, user)
 
+        # Call admin menu
         elif message_text == data.ADMIN_PASSWORD:
             admin_section.send_admin_menu(user=user)
 
+        # Trigger special commands
         elif message_text.startswith("ejf__"):
             test_bot.process_tests_text(
                 bot, user, data, message_text, user_section.send_start_menu
             )
+
+        # log in HR to Company
+        elif message_text.startswith("login_"):
+            hr_section.register_hr(user, login_str=message_text)
 
         else:
             pass  # answer user that it was invalid input (in utils.py maybe)

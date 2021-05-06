@@ -13,6 +13,11 @@ class HRSection(Section):
     def process_callback(self, call: CallbackQuery, user: User):
         action = call.data.split(";")[1]
 
+        # check if user is HR
+        if user.hr_status is False:
+            self.bot.answer_callback_query(call.id, text="Ти наразі не HR :(")
+            return
+
         if action == "StartMenu":
             self.send_start_menu(user, call)
 
@@ -23,7 +28,7 @@ class HRSection(Section):
             pass
 
         elif action == "QuitHR":
-            pass
+            self.exit_hr(user, call)
 
         elif action == "VacInfo":
             pass
@@ -34,8 +39,37 @@ class HRSection(Section):
     def process_text(self, text):
         pass
 
-    def register_hr(self, user: User):
-        pass
+    def register_hr(self, user: User, login_str: str):
+        company_key = login_str.split("_")[-1]
+
+        company = Company.objects.filter(token=company_key).first()
+
+        # check if company with such key exists
+        if company is None:
+            self.bot.send_message(
+                user.chat_id, text="Компанії з таким ключем не існує :("
+            )
+            return
+
+        # check if there is no HR in company
+        if company.HR is not None:
+            if company.HR.chat_id != user.chat_id:
+                self.bot.send_message(
+                    user.chat_id,
+                    text=f"Упс!\nЗа компанією {company.name} вже закріплений користувач {user.name} @{user.username}",
+                )
+            else:
+                self.send_start_menu(user)
+            return
+
+        # connect hr to company is everything is all right
+        company.HR = user
+        company.save()
+
+        user.hr_status = True
+        user.save()
+
+        self.send_start_menu(user)
 
     def send_start_menu(self, user: User, call: CallbackQuery = None):
         company = Company.objects.filter(HR=user).first()
@@ -65,6 +99,18 @@ class HRSection(Section):
             call, vac_text, photo=company_photo, reply_markup=vac_list_markup
         )
 
+    def exit_hr(self, user: User, call: CallbackQuery):
+        company = Company.objects.filter(HR=user).first()
+
+        company.HR = None
+        company.save()
+
+        user.hr_status = False
+        user.save()
+
+        text = f"Ти успішно вийшов з компанії {company.name}!\n"
+        self.send_message(call, text=text)
+
     def _form_start_markup(self, user: User) -> InlineKeyboardMarkup:
         start_markup = InlineKeyboardMarkup()
 
@@ -86,7 +132,7 @@ class HRSection(Section):
 
         # quit hr
         btn_text3 = "Вийти з профілю компанії"
-        btn_callback_sign_out = self.form_hr_callback(action="QuitHR", edit=True)
+        btn_callback_sign_out = self.form_hr_callback(action="QuitHR", delete=True)
         btn_sign_out_from_company = InlineKeyboardButton(
             btn_text3, callback_data=btn_callback_sign_out
         )
@@ -111,7 +157,7 @@ class HRSection(Section):
             vac_list_markup.add(vacancy_button)
 
         # Add new vacancy btn
-        btn_text = "Добавити нову"
+        btn_text = "➕Добавити нову➕"
         btn_callback = self.form_hr_callback(action="AddVacancy", edit=True)
         btn_new_vacancy = InlineKeyboardButton(btn_text, callback_data=btn_callback)
         vac_list_markup.add(btn_new_vacancy)
