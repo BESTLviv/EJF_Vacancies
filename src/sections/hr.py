@@ -2,8 +2,12 @@ from telebot.types import CallbackQuery
 
 from ..data import Data, User, Company, Vacancy
 from .section import Section
-from ..objects import vacancy
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from ..objects import vacancy, quiz
+from telebot.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    ReplyKeyboardRemove,
+)
 
 
 class HRSection(Section):
@@ -32,6 +36,9 @@ class HRSection(Section):
 
         elif action == "VacInfo":
             pass
+
+        elif action == "AddVacancy":
+            self.add_new_vacancy(user)
 
         else:
             pass
@@ -69,6 +76,12 @@ class HRSection(Section):
         user.hr_status = True
         user.save()
 
+        # remove user keyboard
+        del_message = self.bot.send_message(
+            user.chat_id, text="Login suceeded", reply_markup=ReplyKeyboardRemove()
+        )
+        self.bot.delete_message(user.chat_id, del_message.message_id)
+
         self.send_start_menu(user)
 
     def send_start_menu(self, user: User, call: CallbackQuery = None):
@@ -88,15 +101,28 @@ class HRSection(Section):
         else:
             self.send_message(call, text=text, photo=photo, reply_markup=start_markup)
 
-    def send_vacancy_list(self, user: User, call: CallbackQuery):
+    def send_vacancy_list(self, user: User, call: CallbackQuery = None):
         company = Company.objects.filter(HR=user).first()
 
         vac_text = "Вакансії"
         company_photo = company.photo_id
         vac_list_markup = self._form_vac_list_markup(user, company)
 
-        self.send_message(
-            call, vac_text, photo=company_photo, reply_markup=vac_list_markup
+        if call is None:
+            self.bot.send_photo(
+                chat_id=user.chat_id,
+                caption=vac_text,
+                photo=company_photo,
+                reply_markup=vac_list_markup,
+            )
+        else:
+            self.send_message(
+                call, vac_text, photo=company_photo, reply_markup=vac_list_markup
+            )
+
+    def add_new_vacancy(self, user: User):
+        vacancy.start_add_vacancy_quiz(
+            user, bot=self.bot, next_step=self.send_vacancy_list
         )
 
     def exit_hr(self, user: User, call: CallbackQuery):
@@ -160,11 +186,11 @@ class HRSection(Section):
         btn_text = "➕Добавити нову➕"
         btn_callback = self.form_hr_callback(action="AddVacancy", edit=True)
         btn_new_vacancy = InlineKeyboardButton(btn_text, callback_data=btn_callback)
-        vac_list_markup.add(btn_new_vacancy)
 
         # Back button
         btn_callback = self.form_hr_callback(action="StartMenu", edit=True)
         btn_back = self.create_back_button(btn_callback)
-        vac_list_markup.add(btn_back)
+
+        vac_list_markup.add(btn_back, btn_new_vacancy)
 
         return vac_list_markup

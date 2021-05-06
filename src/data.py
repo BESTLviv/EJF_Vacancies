@@ -37,6 +37,11 @@ class Data:
         else:
             self.update_quiz_table()
 
+        # add vacancy quiz
+        if Quiz.objects.filter(name="VacancyQuiz").count() == 0:
+            self.add_vacancy_quiz()
+            print("Vacancy quiz has been added")
+
         # for user in User.objects:
         #    user.additional_info = None
         #    user.save()
@@ -206,6 +211,74 @@ class Data:
             q_email,
             q_agree,
             q_register_end,
+        ]
+
+        quiz.save()
+
+    def add_vacancy_quiz(self):
+        quiz = Quiz(name="VacancyQuiz", is_required=False)
+
+        ejf = self.get_ejf()
+
+        q_name = Question(
+            name="name",
+            message="Спочатку введи назву вакансії",
+            max_text_size=30,
+            correct_answer_message="Гарно звучить 🥰",
+            wrong_answer_message="Введи назву текстом 🤡",
+        )
+
+        q_tag = Question(
+            name="tag",
+            message="Вибери категорію до якої відноситься вакансія",
+            buttons=list(ejf.filters_interest),
+            correct_answer_message="Ого, круто 🥰",
+            wrong_answer_message="Не треба так робити",
+            allow_user_input=False,
+        )
+
+        q_experience = Question(
+            name="experience",
+            message="Вибери наскільки досвідченим має бути твій новий працівник!",
+            buttons=list(ejf.filters_experience),
+            correct_answer_message="Ого, круто 🥰",
+            wrong_answer_message="Не треба так робити",
+            allow_user_input=False,
+        )
+
+        q_employment = Question(
+            name="employment_type",
+            message="Вибери тип зайнятості",
+            buttons=list(ejf.filters_employment),
+            correct_answer_message="Ого, круто 🥰",
+            wrong_answer_message="Не треба так робити",
+            allow_user_input=False,
+        )
+
+        q_salary = Question(
+            name="salary",
+            message="Введи скільки зароблятиме твій працівник",
+            max_text_size=30,
+            buttons=["Договірно"],
+            correct_answer_message="Ого, круто 🥰",
+            wrong_answer_message="Не треба так робити",
+        )
+
+        q_description = Question(
+            name="description",
+            message="Лишився останній штрих!\nНадішли мені стислий опис своєї вакансії, щоб кандидат міг зрозуміти, чим він буде займатись.\n\n<b>Максимум 2000 символів</b>",
+            max_text_size=2000,
+            correct_answer_message="Клас 🥰",
+            wrong_answer_message="Введи опис текстом і не більше 2000 символів 🤡",
+        )
+
+        quiz.questions = [
+            q_name,
+            q_tag,
+            q_experience,
+            q_employment,
+            q_salary,
+            q_description,
         ]
 
         quiz.save()
@@ -454,7 +527,7 @@ class Vacancy(me.Document):
     add_date = me.DateTimeField(required=True)
     last_update_date = me.DateTimeField(required=True)
     active_days_left = me.IntField(default=14)
-    is_active = me.BooleanField(default=False)
+    is_active = me.BooleanField(default=True)
 
 
 class Question(me.EmbeddedDocument):
@@ -462,7 +535,8 @@ class Question(me.EmbeddedDocument):
     message = me.StringField(required=True)
     # photo = me.StringField(default=None)
     buttons = me.ListField(default=list())
-    input_type = me.StringField(choices=["text", "contact"], default="text")
+    input_type = me.StringField(choices=["text", "photo", "contact"], default="text")
+    max_text_size = me.IntField(max_value=3000)
     allow_user_input = me.BooleanField(default=True)
     regex = me.StringField(default=None)
     correct_answer_message = me.StringField(defaul=None)

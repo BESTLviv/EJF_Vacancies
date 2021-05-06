@@ -1,77 +1,29 @@
 from typing import Iterator
-from ..data import User, Vacancy, Data
+from ..data import User, Vacancy, Quiz, Company, Data
+from ..objects import quiz
+
+from typing import Callable
+from datetime import datetime, timezone
+from telebot import TeleBot
 
 
-def add_vacancy():
-    add_vacancy_steps = [
-        input_name,
-        input_category,
-        input_experience,
-        input_work_type,
-        input_description,
-        finish_add_vacancy,
-    ]
+def start_add_vacancy_quiz(user: User, bot: TeleBot, next_step: Callable):
+    vacancy_quiz = Quiz.objects.filter(name="VacancyQuiz").first()
+    vacancy_quiz_questions = vacancy_quiz.questions
 
-    steps_iterator = iter(add_vacancy_steps)
+    quiz_iterator = iter(vacancy_quiz_questions)
+    question = next(quiz_iterator)
 
-
-def input_name(next_step: Iterator = None):
-    pass
-
-
-def _process_input_name(message, **kwargs):
-    next_step = kwargs["next_step"]
-
-    if next(next_step, None) is not None:
-        next_step(next_step)
-
-
-def input_category(next_step: Iterator = None):
-    pass
-
-
-def _process_input_category(message, **kwargs):
-    next_step = kwargs["next_step"]
-
-    if next(next_step, None) is not None:
-        next_step(next_step)
-
-
-def input_experience(next_step: Iterator = None):
-    pass
-
-
-def _process_input_experience(message, **kwargs):
-    next_step = kwargs["next_step"]
-
-    if next(next_step, None) is not None:
-        next_step(next_step)
-
-
-def input_work_type(next_step: Iterator = None):
-    pass
-
-
-def _process_input_work_type(message, **kwargs):
-    next_step = kwargs["next_step"]
-
-    if next(next_step, None) is not None:
-        next_step(next_step)
-
-
-def input_description(next_step: Iterator = None):
-    pass
-
-
-def _process_input_description(message, **kwargs):
-    next_step = kwargs["next_step"]
-
-    if next(next_step, None) is not None:
-        next_step(next_step)
-
-
-def finish_add_vacancy(next_step: Iterator = None):
-    pass
+    quiz.send_question(
+        user,
+        bot,
+        question,
+        quiz_iterator,
+        save_func=_save_vacancy,
+        final_func=next_step,
+        container={},
+        is_required=vacancy_quiz.is_required,
+    )
 
 
 def form_vacancy_info(vacancy: Vacancy, status: bool):
@@ -114,6 +66,39 @@ def delete_vacancy(call) -> str:
         result = "Щось пішло не так :("
 
     return result
+
+
+def _save_vacancy(user: User, container: dict):
+    company = Company.objects.filter(HR=user).first()
+    vacancy = Vacancy.objects.filter(company=company, name=container["name"]).first()
+
+    if vacancy is None:
+        vacancy = Vacancy()
+        vacancy.company = company
+
+        date = datetime.now(tz=timezone.utc)
+        vacancy.add_date = date
+        vacancy.last_update_date = date
+
+    if "name" in container:
+        vacancy.name = container["name"]
+
+    if "tag" in container:
+        vacancy.tag = container["tag"]
+
+    if "salary" in container:
+        vacancy.salary = container["salary"]
+
+    if "experience" in container:
+        vacancy.experience = container["experience"]
+
+    if "employment_type" in container:
+        vacancy.employment_type = container["employment_type"]
+
+    if "description" in container:
+        vacancy.description = container["description"]
+
+    vacancy.save()
 
 
 def change_vacancy_status(vacancy: Vacancy):

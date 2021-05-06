@@ -12,6 +12,7 @@ help_msg = (
     "<b>ejf__update</b> - for updating content from Database\n"
     "<b>ejf__resetquiz</b> - full start of bot (with start message and quiz)\n"
     "<b>ejf__user</b> - user start menu"
+    "<b>ejf__test_blocked</b> - test blocked users"
 )
 
 
@@ -39,3 +40,31 @@ def process_tests_text(
 
     elif test_action == "user":
         user_func(user)
+
+    elif test_action == "test_blocked":
+
+        blocked_counter = 0
+        unblocked_counter = 0
+        for u in User.objects:
+            try:
+                m = bot.send_message(chat_id=u.chat_id, text="check")
+                bot.delete_message(chat_id=u.chat_id, message_id=m.message_id)
+                if u.is_blocked:
+                    u.is_blocked = False
+                    bot.send_message(
+                        user.chat_id, text=f"{u.chat_id} @{u.username} unblocked!!!!"
+                    )
+                    u.save()
+                    unblocked_counter += 1
+
+            except Exception as e:
+                bot.send_message(user.chat_id, text=f"{u.chat_id} @{u.username} {e}")
+                if u.is_blocked is False:
+                    u.is_blocked = True
+                    u.save()
+                    blocked_counter += 1
+
+        bot.send_message(
+            user.chat_id,
+            text=f"Заблоковано нових {blocked_counter}\nРозблоковано нових {unblocked_counter}",
+        )

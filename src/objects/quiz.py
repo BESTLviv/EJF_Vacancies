@@ -14,14 +14,7 @@ from time import sleep
 
 import re
 
-# start_quiz = {
-#    "name_surname": {
-#        "message": "Ім'я та прізвище",
-#        "photo": None,
-#        "buttons": None,
-#        "input_type": "text",
-#    },
-# }
+CANCEL_BUTTON_TEXT = "Скасувати"
 
 
 class InputException(Exception):
@@ -29,7 +22,7 @@ class InputException(Exception):
 
 
 def start_starting_quiz(user: User, bot: TeleBot, final_func: Callable):
-    start_quiz = Quiz.objects.filter(name="StartQuiz")[0]
+    start_quiz = Quiz.objects.filter(name="StartQuiz").first()
     start_quiz_questions = start_quiz.questions
 
     quiz_iterator = iter(start_quiz_questions)
@@ -45,6 +38,7 @@ def start_starting_quiz(user: User, bot: TeleBot, final_func: Callable):
         save_func=_save_answers_to_user,
         final_func=final_func,
         container={},
+        is_required=start_quiz.is_required,
     )
 
 
@@ -57,6 +51,7 @@ def send_question(
     final_func: Callable = None,
     container=None,
     is_first_try=True,
+    is_required=True,
 ):
     """
     :param user: user from DB
@@ -64,16 +59,19 @@ def send_question(
     :param question: question to send and process
     :param quiz_iterator: iterator on questions
     :param save_func: function that will save all data from quiz
+        It must receive 2 params user: User and container: dict
     :param final_func: function that will be called after the quiz
+        It must receive 1 param user: User
     :param container: temp dictionary where all the data will be stored
     :param is_first_try: show if it is first time to answer a question.
         After wrong answer we do not need to repeat a question
+    :param is_required: is quiz can be canceled
     """
     chat_id = user.chat_id
     text = question.message
 
     # form markup
-    answer_markup = _create_answer_markup(question)
+    answer_markup = _create_answer_markup(question, is_required=is_required)
 
     # do not send it if answer was wrong
     if is_first_try:
@@ -90,6 +88,7 @@ def send_question(
         final_func=final_func,
         container=container,
         is_first_try=is_first_try,
+        is_required=is_required,
     )
 
 
@@ -113,6 +112,7 @@ def process_message(message: Message, **kwargs):
     final_func = kwargs["final_func"]
     container = kwargs["container"]
     is_first_try = kwargs["is_first_try"]
+    is_required = kwargs["is_required"]
 
     content_type = message.content_type
 
@@ -124,25 +124,15 @@ def process_message(message: Message, **kwargs):
         if content_type == question.input_type:
 
             if content_type == "text":
-
-                input_text = message.text
-
-                if question.allow_user_input:
-                    # if there is a specific text input
-                    if question.regex:
-                        pattern = re.compile(question.regex)
-                        if not pattern.search(input_text):
-                            raise InputException
-
-                    # if everything is all right -> save it to temp container
-                    container[question.name] = input_text
-
-                # if text input allowed only from keyboard
+                if (
+                    _process_text_messages(
+                        message, question, bot, user, is_required_quiz=is_required
+                    )
+                    is False
+                ):
+                    return
                 else:
-                    if input_text not in question.buttons:
-                        raise InputException
-
-                    container[question.name] = input_text
+                    container[question.name] = message.text
 
             elif content_type == "contact":
                 contact = message.contact
@@ -152,6 +142,9 @@ def process_message(message: Message, **kwargs):
 
                 container["phone"] = phone
                 container["user_id"] = user_id
+
+            elif content_type == "photo":
+                container[question.name] = message.photo[-1].file_id
 
             else:
                 raise InputException
@@ -189,6 +182,7 @@ def process_message(message: Message, **kwargs):
             final_func=final_func,
             container=container,
             is_first_try=is_first_try,
+            is_required=is_required,
         )
     # if questions ended
     else:
@@ -201,7 +195,44 @@ def process_message(message: Message, **kwargs):
             final_func(user)
 
 
-def _create_answer_markup(question: Question) -> ReplyKeyboardMarkup:
+def _process_text_messages(
+    message: Message,
+    question: Question,
+    bot: TeleBot,
+    user: User,
+    is_required_quiz: bool,
+):
+    input_text = message.text
+
+    # cancel quiz if it the CANCEL button was pressed
+    if is_required_quiz is False and input_text == CANCEL_BUTTON_TEXT:
+        bot.send_message(
+            user.chat_id,
+            text="Я скасував усі твої дії :)\nНажимай /start щоб продовжити",
+        )
+        return False
+
+    if question.allow_user_input:
+        # if there is a specific text input
+        if question.regex:
+            pattern = re.compile(question.regex)
+            if not pattern.search(input_text):
+                raise InputException
+
+    # if text input allowed only from keyboard
+    else:
+        if input_text not in question.buttons:
+            raise InputException
+
+    # if the answer was too long
+    if question.max_text_size is not None:
+        if len(input_text) > question.max_text_size:
+            raise InputException
+
+    return True
+
+
+def _create_answer_markup(question: Question, is_required: bool) -> ReplyKeyboardMarkup:
     answer_markup = ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
 
     if question.input_type == "text":
@@ -217,6 +248,11 @@ def _create_answer_markup(question: Question) -> ReplyKeyboardMarkup:
     elif question.input_type == "location":
         answer_btn = KeyboardButton(text=question.buttons[0], request_location=True)
         answer_markup.add(answer_btn)
+
+    # cancel button
+    if is_required is False:
+        cancel_btn = KeyboardButton(text=CANCEL_BUTTON_TEXT)
+        answer_markup.add(cancel_btn)
 
     return answer_markup
 

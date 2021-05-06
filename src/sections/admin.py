@@ -136,7 +136,9 @@ class AdminSection(Section):
             )
             vacancy_list_markup.add(vacancy_button)
 
-        btn_callback = self.form_admin_callback(action="CompanyDetails", company_id=company.id, new=True)
+        btn_callback = self.form_admin_callback(
+            action="CompanyDetails", company_id=company.id, new=True
+        )
         btn_back = self.create_back_button(btn_callback)
         vacancy_list_markup.add(btn_back)
 
@@ -146,12 +148,14 @@ class AdminSection(Section):
         vacancy_id = call.data.split(";")[4]
         vac = Vacancy.objects.with_id(vacancy_id)
 
-        company_photo = vacancy.company.photo_id
+        company_photo = vac.company.photo_id
 
         vacancy_description = vacancy.form_vacancy_info(vacancy=vac, status=True)
         markup = self._form_vacancy_menu_markup(vacancy_id)
 
-        self.send_message(call, photo=company_photo, text=vacancy_description, reply_markup=markup)
+        self.send_message(
+            call, photo=company_photo, text=vacancy_description, reply_markup=markup
+        )
 
     def delete_vacancy(self, call: CallbackQuery, user: User):
         result = vacancy.delete_vacancy(call)
@@ -188,7 +192,7 @@ class AdminSection(Section):
 
     def send_company_key(self, call: CallbackQuery, user: User):
         company_id = call.data.split(";")[3]
-        company_key = Company.objects.with_id(company_id).token
+        company_key = f"login_{Company.objects.with_id(company_id).token}"
         self.send_message(call, text=company_key)
 
     def send_statistic(self, call: CallbackQuery, user: User):
@@ -338,7 +342,7 @@ class AdminSection(Section):
 
         elif message.content_type == "photo":
             text = message.caption
-            photo = message.photo[0].file_id
+            photo = message.photo[-1].file_id
 
         else:
             self.mail_all(user)
@@ -489,7 +493,9 @@ class AdminSection(Section):
         btn_callback = self.form_admin_callback(
             action="ChangeVacancyStatus", vacancy_id=vacancy_id, edit=True
         )
-        change_state_btn = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        change_state_btn = InlineKeyboardButton(
+            text=btn_text, callback_data=btn_callback
+        )
         vacancy_menu_markup.add(change_state_btn)
 
         # send statistics
@@ -504,7 +510,9 @@ class AdminSection(Section):
 
         vacancy = Vacancy.objects.with_id(vacancy_id)
         company = vacancy.company
-        btn_callback = self.form_admin_callback(action="VacancyList", company_id=company.id, new=True)
+        btn_callback = self.form_admin_callback(
+            action="VacancyList", company_id=company.id, new=True
+        )
         btn_back = self.create_back_button(btn_callback)
         vacancy_menu_markup.add(btn_back)
 
