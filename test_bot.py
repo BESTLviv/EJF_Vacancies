@@ -11,8 +11,8 @@ help_msg = (
     "<b>ejf__help</b> - for help message\n"
     "<b>ejf__update</b> - for updating content from Database\n"
     "<b>ejf__resetquiz</b> - full start of bot (with start message and quiz)\n"
-    "<b>ejf__user</b> - user start menu"
-    "<b>ejf__test_blocked</b> - test blocked users"
+    "<b>ejf__user</b> - user start menu\n"
+    "<b>ejf__test_blocked</b> - test blocked users\n"
 )
 
 

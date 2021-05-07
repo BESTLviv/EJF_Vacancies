@@ -52,10 +52,7 @@ def form_vacancy_info(vacancy: Vacancy, status: bool):
     return vacancy_description
 
 
-def delete_vacancy(call) -> str:
-    vacancy_id = call.data.split(";")[4]
-    vacancy = Vacancy.objects.with_id(vacancy_id)
-
+def delete_vacancy(vacancy: Vacancy) -> str:
     vacancy_company = vacancy.company
 
     try:
@@ -66,6 +63,11 @@ def delete_vacancy(call) -> str:
         result = "Щось пішло не так :("
 
     return result
+
+
+def change_vacancy_status(vacancy: Vacancy):
+    vacancy.is_active = False if vacancy.is_active else True
+    vacancy.save()
 
 
 def _save_vacancy(user: User, container: dict):
@@ -98,9 +100,4 @@ def _save_vacancy(user: User, container: dict):
     if "description" in container:
         vacancy.description = container["description"]
 
-    vacancy.save()
-
-
-def change_vacancy_status(vacancy: Vacancy):
-    vacancy.is_active = False if vacancy.is_active else True
     vacancy.save()

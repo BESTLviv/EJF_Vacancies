@@ -31,16 +31,7 @@ class Data:
 
         # remove later
         # if there is no quiz table in DB - then create it
-        if len(Quiz.objects) == 0:
-            self.add_start_quiz()
-        # otherwise update it
-        else:
-            self.update_quiz_table()
-
-        # add vacancy quiz
-        if Quiz.objects.filter(name="VacancyQuiz").count() == 0:
-            self.add_vacancy_quiz()
-            print("Vacancy quiz has been added")
+        self.add_quizes()
 
         # for user in User.objects:
         #    user.additional_info = None
@@ -104,7 +95,24 @@ class Data:
                 is_active=is_active,
             ).save()
 
-    def add_start_quiz(self):
+    def add_quizes(self):
+        if len(Quiz.objects) == 0:
+            self._add_start_quiz()
+        # otherwise update it
+        else:
+            self.update_quiz_table()
+
+        # add vacancy quiz
+        if Quiz.objects.filter(name="VacancyQuiz").count() == 0:
+            self._add_vacancy_quiz()
+            print("Vacancy quiz has been added")
+
+        # add company quiz
+        if Quiz.objects.filter(name="CompanyQuiz").count() == 0:
+            self._add_company_quiz()
+            print("Company quiz has been added")
+
+    def _add_start_quiz(self):
 
         quiz = Quiz(name="StartQuiz", is_required=True)
 
@@ -215,7 +223,7 @@ class Data:
 
         quiz.save()
 
-    def add_vacancy_quiz(self):
+    def _add_vacancy_quiz(self):
         quiz = Quiz(name="VacancyQuiz", is_required=False)
 
         ejf = self.get_ejf()
@@ -280,6 +288,45 @@ class Data:
             q_salary,
             q_description,
         ]
+
+        quiz.save()
+
+    def _add_company_quiz(self):
+        quiz = Quiz(name="CompanyQuiz", is_required=False)
+
+        q_name = Question(
+            name="name",
+            message="Спочатку введи назву компанії",
+            max_text_size=30,
+            correct_answer_message="Гарно звучить 🥰",
+            wrong_answer_message="Введи назву текстом 🤡",
+        )
+
+        q_photo_id = Question(
+            name="photo_id",
+            message="Скинь фотку компанії",
+            input_type="photo",
+            correct_answer_message="Ого, круто 🥰",
+            wrong_answer_message="Не треба так робити",
+        )
+
+        q_description = Question(
+            name="description",
+            message="Надішли опис компанії",
+            max_text_size=2000,
+            correct_answer_message="Клас 🥰",
+            wrong_answer_message="Введи опис текстом і не більше 2000 символів 🤡",
+        )
+
+        q_company_url = Question(
+            name="company_url",
+            message="Надішли посилання на сайт компанії",
+            regex="^https:\/\/.*",
+            correct_answer_message="Клас 🥰",
+            wrong_answer_message="Введи посилання яке починається на <b>https://</b>",
+        )
+
+        quiz.questions = [q_name, q_photo_id, q_description, q_company_url]
 
         quiz.save()
 
@@ -509,6 +556,7 @@ class Company(me.Document):
     name = me.StringField(required=True, unique=True)
     photo_id = me.StringField(required=True)
     description = me.StringField(required=True)
+    company_url = me.StringField()
     vacancy_counter = me.IntField(default=20)  # ?
     HR = me.ReferenceField(User, required=False)
     token = me.StringField(required=True)

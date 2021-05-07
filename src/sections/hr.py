@@ -69,6 +69,14 @@ class HRSection(Section):
                 self.send_start_menu(user)
             return
 
+        # check if user is not HR yet
+        if user.hr_status:
+            self.bot.send_message(
+                user.chat_id,
+                text=f"Упс!\nТи вже належиш до іншої компанії :)",
+            )
+            return
+
         # connect hr to company is everything is all right
         company.HR = user
         company.save()

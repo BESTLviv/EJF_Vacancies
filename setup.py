@@ -8,9 +8,10 @@ from os import path
 def create_parser():
     """Creat parameters passing from console"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-token', '--token')
-    parser.add_argument('-db', '--database')
+    parser.add_argument("-token", "--token")
+    parser.add_argument("-db", "--database")
     return parser
+
 
 def createConfig(path):
     """Using parser to output parameters from console"""
@@ -18,22 +19,22 @@ def createConfig(path):
     parser = create_parser()
     args = parser.parse_args(sys.argv[1:])
 
-    config.add_section('TG')
+    config.add_section("TG")
     config["TG"]["token"] = args.token
 
-    config.add_section('Mongo')
+    config.add_section("Mongo")
     config["Mongo"]["db"] = args.database
 
     with open(path, "w") as config_file:
         config.write(config_file)
 
 
-if __name__ == '__main__':
-    if path.isfile('Settings.ini'):
+if __name__ == "__main__":
+    if path.isfile("Settings.ini"):
         key = input("Do you really wanna change your settings?(y/n) ")
         if key == "y":
-            createConfig('Settings.ini')
+            createConfig("Settings.ini")
         else:
             sys.exit("Script is terminated")
     else:
-        createConfig('Settings.ini')
+        createConfig("Settings.ini")
