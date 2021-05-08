@@ -533,9 +533,14 @@ class AdminSection(Section):
 
         vacancy_menu_markup = InlineKeyboardMarkup()
 
-        # delete vacancy
-        company_id = Vacancy.objects.with_id(vacancy_id).company.id
+        vacancy = Vacancy.objects.with_id(vacancy_id)
+        company_id = vacancy.company.id
 
+        # full info
+        full_info_btn = vacancy_module.create_vacancy_telegraph_page_button(vacancy)
+        vacancy_menu_markup.add(full_info_btn)
+
+        # delete vacancy
         btn_text = "Видалити вакансію"
         btn_callback = self.form_admin_callback(
             action="DeleteVacancy",
@@ -548,7 +553,6 @@ class AdminSection(Section):
         vacancy_menu_markup.add(delete_vacancy_btn)
 
         # on\off
-        vacancy = Vacancy.objects.with_id(vacancy_id)
         if vacancy.is_active:
             btn_text = "Дезактивувати"
         else:
@@ -561,7 +565,7 @@ class AdminSection(Section):
         )
         vacancy_menu_markup.add(change_state_btn)
 
-        # send statistics
+        # statistics
         btn_text = "Статистика"
         btn_callback = self.form_admin_callback(
             action="VacancyStatistics", vacancy_id=vacancy_id, edit=True

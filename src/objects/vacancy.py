@@ -5,9 +5,13 @@ from ..objects import quiz
 from typing import Callable
 from datetime import datetime, timezone
 from telebot import TeleBot
+from telebot.types import InlineKeyboardButton
+from telegraph import Telegraph
 
 
-def start_add_vacancy_quiz(user: User, bot: TeleBot, next_step: Callable):
+def start_add_vacancy_quiz(
+    user: User, bot: TeleBot, next_step: Callable, telegraph_account: Telegraph
+):
     vacancy_quiz = Quiz.objects.filter(name="VacancyQuiz").first()
     vacancy_quiz_questions = vacancy_quiz.questions
 
@@ -21,19 +25,19 @@ def start_add_vacancy_quiz(user: User, bot: TeleBot, next_step: Callable):
         quiz_iterator,
         save_func=_save_vacancy,
         final_func=next_step,
-        container={},
+        container={"telegraph": telegraph_account},
         is_required=vacancy_quiz.is_required,
     )
 
 
-def form_vacancy_info(vacancy: Vacancy, status: bool):
+def form_vacancy_info(vacancy: Vacancy, status: bool) -> str:
 
     vacancy_description = (
         f"{vacancy.name}\n"
         f"<b>Досвід</b>: {vacancy.experience}\n"
         f"<b>Зарплата</b>: {vacancy.salary}\n"
         f"<b>Робочий день</b>: {vacancy.employment_type}\n"
-        f"<b>Опис</b>: \n{vacancy.description}\n"
+        # f"<b>Опис</b>: \n{vacancy.description}\n"
     )
 
     if status:
@@ -50,6 +54,43 @@ def form_vacancy_info(vacancy: Vacancy, status: bool):
         )
 
     return vacancy_description
+
+
+def create_vacancy_telegraph_page(vacancy: Vacancy, telegraph_account: Telegraph):
+    title = vacancy.name
+
+    html_content = (
+        f"<b>Категорія</b>: {vacancy.tag}"
+        f"<b>Досвід</b>: {vacancy.experience}\n"
+        f"<b>Зарплата</b>: {vacancy.salary}\n"
+        f"<b>Робочий день</b>: {vacancy.employment_type}\n"
+        f"<b>Опис</b>: \n{vacancy.description}\n"
+    )
+
+    author_name = telegraph_account.get_account_info()["author_name"]
+    author_url = telegraph_account.get_account_info()["author_url"]
+
+    response = telegraph_account.create_page(
+        title=title,
+        html_content=html_content,
+        author_name=author_name,
+        author_url=author_url,
+    )
+
+    vacancy.telegraph_link_token = response["path"]
+    vacancy.save()
+
+
+def create_vacancy_telegraph_page_button(vacancy: Vacancy) -> InlineKeyboardButton:
+    btn_text = "Детальніше"
+    btn_url = (
+        f"https://telegra.ph/{vacancy.telegraph_link_token}"
+        if vacancy.telegraph_link_token
+        else None
+    )
+    btn = InlineKeyboardButton(text=btn_text, url=btn_url, callback_data="IGNORE")
+
+    return btn
 
 
 def delete_vacancy(vacancy: Vacancy) -> str:
@@ -99,5 +140,8 @@ def _save_vacancy(user: User, container: dict):
 
     if "description" in container:
         vacancy.description = container["description"]
+
+    if "telegraph" in container:
+        create_vacancy_telegraph_page(vacancy, container["telegraph"])
 
     vacancy.save()

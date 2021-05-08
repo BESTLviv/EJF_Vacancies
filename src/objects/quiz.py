@@ -209,6 +209,7 @@ def _process_text_messages(
         bot.send_message(
             user.chat_id,
             text="Я скасував усі твої дії :)\nНажимай /start щоб продовжити",
+            reply_markup=ReplyKeyboardRemove(),
         )
         return False
 

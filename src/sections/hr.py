@@ -130,7 +130,10 @@ class HRSection(Section):
 
     def add_new_vacancy(self, user: User):
         vacancy.start_add_vacancy_quiz(
-            user, bot=self.bot, next_step=self.send_vacancy_list
+            user,
+            bot=self.bot,
+            next_step=self.send_vacancy_list,
+            telegraph_account=self.data.telegraph,
         )
 
     def exit_hr(self, user: User, call: CallbackQuery):

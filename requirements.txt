@@ -3,3 +3,4 @@ pymongo == 3.11.2
 dnspython == 2.0.0
 mongoengine == 0.23.0
 configparser == 5.0.2
+telergraph == 1.4.1

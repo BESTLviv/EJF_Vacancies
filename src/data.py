@@ -1,4 +1,5 @@
 from telebot import TeleBot
+from telegraph import Telegraph
 import mongoengine as me
 from datetime import datetime, timezone
 
@@ -26,6 +27,9 @@ class Data:
         # if there was table already
         else:
             self.update_ejf_table()
+
+        # create telegraph account
+        self._create_telegraph_account()
 
         self.ADMIN_PASSWORD = self.get_ejf().admin_password
 
@@ -81,7 +85,7 @@ class Data:
             active_days_left = 14
             is_active = True
 
-            Vacancy(
+            vacancy = Vacancy(
                 company=company,
                 name=name,
                 tag=tag,
@@ -93,7 +97,13 @@ class Data:
                 last_update_date=last_update_date,
                 active_days_left=active_days_left,
                 is_active=is_active,
-            ).save()
+            )
+
+            from .objects import vacancy as vacancy_module
+
+            vacancy_module.create_vacancy_telegraph_page(vacancy, self.telegraph)
+
+            vacancy.save()
 
     def add_quizes(self):
         if len(Quiz.objects) == 0:
@@ -231,7 +241,7 @@ class Data:
         q_name = Question(
             name="name",
             message="Спочатку введи назву вакансії",
-            max_text_size=30,
+            max_text_size=100,
             correct_answer_message="Гарно звучить 🥰",
             wrong_answer_message="Введи назву текстом 🤡",
         )
@@ -500,6 +510,28 @@ class Data:
 
         return "".join(random.choice(letters) for i in range(length))
 
+    def _create_telegraph_account(self):
+        SHORT_NAME = "BEST Job Fest"
+        AUTHOR_NAME = "Yaroslav"
+        AUTHOR_URL = "https://t.me/bestlviv"
+
+        ejf = self.get_ejf()
+
+        if ejf.telegraph_token is None:
+            self.telegraph = Telegraph()
+            self.telegraph.create_account(SHORT_NAME, AUTHOR_NAME, AUTHOR_URL)
+
+            # save new token
+            ejf.update(set__telegraph_token=self.telegraph.get_access_token())
+            ejf.save()
+
+            print("New Telegraph account has been initialized")
+
+        else:
+            self.telegraph = Telegraph(ejf.telegraph_token)
+
+            print("Telegraph account has been initialized")
+
 
 class Content(me.Document):
     start_text = me.StringField()
@@ -523,6 +555,7 @@ class JobFair(me.Document):
     filters_experience = me.ListField(default=list())
     filters_employment = me.ListField(default=list())
     admin_password = me.StringField()
+    telegraph_token = me.StringField()
     cv_archive_file_id_list = me.ListField(default=None)
     cv_archive_last_update = me.DateTimeField(default=None)
     cv_archive_size = me.IntField(default=0)
@@ -572,6 +605,7 @@ class Vacancy(me.Document):
     experience = me.StringField(required=True)
     employment_type = me.StringField(required=True)
     description = me.StringField(required=True)
+    telegraph_link_token = me.StringField()
     add_date = me.DateTimeField(required=True)
     last_update_date = me.DateTimeField(required=True)
     active_days_left = me.IntField(default=14)

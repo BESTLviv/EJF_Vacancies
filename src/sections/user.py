@@ -10,7 +10,7 @@ from ..data import Data, User, JobFair, Vacancy
 from ..objects import quiz
 from .section import Section
 from ..objects import interests
-from ..objects import vacancy
+from ..objects import vacancy as vacancy_module
 from random import randint
 
 
@@ -176,10 +176,12 @@ class UserSection(Section):
             vac_index = list(vacancies).index(vac)
 
         # form content of vacancy to be send to user
-        vacancy_description = vacancy.form_vacancy_info(vacancy=vac, status=False)
+        vacancy_description = vacancy_module.form_vacancy_info(
+            vacancy=vac, status=False
+        )
         company_photo = vac.company.photo_id
         vacancy_info_menu_markup = self._form_vacancy_info_menu_markup(
-            user=user, vac=vac, vacancies=list(vacancies), cur_vac_index=vac_index
+            user=user, vacancy=vac, vacancies=list(vacancies), cur_vac_index=vac_index
         )
 
         # send vacancy info
@@ -203,9 +205,24 @@ class UserSection(Section):
         )
 
     def _form_vacancy_info_menu_markup(
-        self, user: User, vac: Vacancy, vacancies: list, cur_vac_index: int
+        self, user: User, vacancy: Vacancy, vacancies: list, cur_vac_index: int
     ) -> InlineKeyboardMarkup:
 
+        vacancy_menu_markup = InlineKeyboardMarkup()
+
+        # full info
+        full_info_btn = vacancy_module.create_vacancy_telegraph_page_button(vacancy)
+        vacancy_menu_markup.add(full_info_btn)
+
+        # apply with CV button
+        btn_text = "Податися за допомогою CV"
+        btn_callback = self.form_user_callback(
+            action="ApplyCV", vacancy_id=vacancy.id, edit=True
+        )
+        btn_cv = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
+        vacancy_menu_markup.add(btn_cv)
+
+        # left right
         next_vac_index = int()
 
         if cur_vac_index == len(vacancies) - 1:
@@ -217,15 +234,6 @@ class UserSection(Section):
 
         prev_vac = vacancies[prev_vac_index]
         next_vac = vacancies[next_vac_index]
-
-        # apply with CV button
-        apply_markup = InlineKeyboardMarkup()
-        btn_text = "Податися за допомогою CV"
-        btn_callback = self.form_user_callback(
-            action="ApplyCV", vacancy_id=vac.id, edit=True
-        )
-        btn_cv = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
-        apply_markup.add(btn_cv)
 
         # previous vacancy button
         btn_text = "👈"
@@ -245,9 +253,9 @@ class UserSection(Section):
         )
         btn_next = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
 
-        apply_markup.add(btn_prev, btn_counter, btn_next)
+        vacancy_menu_markup.add(btn_prev, btn_counter, btn_next)
 
-        return apply_markup
+        return vacancy_menu_markup
 
     def _form_profile_vacancy_count_text(self, user: User) -> str:
 

@@ -80,6 +80,7 @@ def start_bot(message):
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback_query(call):
     user = updater.update_user_interaction_time(call.message)
+    bot.clear_step_handler_by_chat_id(user.chat_id)
     section = call.data.split(";")[0]
 
     try:
