@@ -9,7 +9,7 @@ import tempfile
 import shutil
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def get_user_type(message: Message):
@@ -136,6 +136,10 @@ def time_check(func):
         return rest
 
     return wrapper
+
+
+def get_now() -> datetime:
+    return datetime.now(tz=timezone.utc)
 
 
 #

@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 
 import string
 import random
-from datetime import datetime
 
 
 class Data:
@@ -512,7 +511,7 @@ class Data:
 
     def _create_telegraph_account(self):
         SHORT_NAME = "BEST Job Fest"
-        AUTHOR_NAME = "Yaroslav"
+        AUTHOR_NAME = "BEST Lviv"
         AUTHOR_URL = "https://t.me/bestlviv"
 
         ejf = self.get_ejf()
@@ -618,7 +617,7 @@ class Question(me.EmbeddedDocument):
     # photo = me.StringField(default=None)
     buttons = me.ListField(default=list())
     input_type = me.StringField(choices=["text", "photo", "contact"], default="text")
-    max_text_size = me.IntField(max_value=3000)
+    max_text_size = me.IntField(max_value=4000)
     allow_user_input = me.BooleanField(default=True)
     regex = me.StringField(default=None)
     correct_answer_message = me.StringField(defaul=None)
@@ -635,14 +634,15 @@ class Quiz(me.Document):
     is_required = me.BooleanField(default=False)
 
 
-class VacancyPreviewLog(me.Document):
-    """
-    Class for logging user viewing of vacancy.
-    """
-
-    vacancy = me.ReferenceField(Vacancy, required=True)
-    user = me.ReferenceField(User, required=True)
-    log_datetime = me.DateTimeField(required=True)
+# class VacancyPreviewLog(me.Document):
+#    """
+#    Class for logging user viewing of vacancy.
+#    """
+#
+#    vacancy = me.ReferenceField(Vacancy, required=True)
+#    user = me.ReferenceField(User, required=True)
+#    log_datetime = me.DateTimeField(required=True)
+#
 
 
 class VacancyApplyLog(me.Document):
@@ -652,18 +652,19 @@ class VacancyApplyLog(me.Document):
 
     vacancy = me.ReferenceField(Vacancy, required=True)
     user = me.ReferenceField(User, required=True)
-    cv_file_id = me.IntField(required=True)
-    log_datetime = me.DateTimeField(required=True)
+    apply_datetime = me.DateTimeField(required=True)
+    last_view_datetime = me.DateTimeField(default=None)
+    view_count = me.IntField(default=0)
 
 
-class VacancyPromotionLog(me.Document):
-    """
-    Class for logging every promotion.
-    """
-
-    vacancy = me.ReferenceField(Vacancy, required=True)
-    auditory_tag = me.StringField(required=True)
-    log_datetime = me.DateField(required=True)
+# class VacancyPromotionLog(me.Document):
+#    """
+#    Class for logging every promotion.
+#    """
+#
+#    vacancy = me.ReferenceField(Vacancy, required=True)
+#    auditory_tag = me.StringField(required=True)
+#    log_datetime = me.DateField(required=True)
 
 
 # from datetime import datetime

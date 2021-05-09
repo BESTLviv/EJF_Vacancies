@@ -6,11 +6,10 @@ from telebot.types import (
     InlineKeyboardButton,
 )
 
-from ..data import Data, User, JobFair, Vacancy
-from ..objects import quiz
+from ..data import Data, User, JobFair, Vacancy, VacancyApplyLog
+from ..objects import quiz, vacancy as vacancy_module, interests
 from .section import Section
-from ..objects import interests
-from ..objects import vacancy as vacancy_module
+from ..staff import utils
 from random import randint
 
 
@@ -28,9 +27,9 @@ class UserSection(Section):
             self.bot.answer_callback_query(call.id, text="HR не має доступу сюди :(")
             return
 
-        if action == "ApplyCV":
+        if action == "ApplyVacancy":
             vacancy_id = call.data.split(";")[3]
-            self.apply_for_vacancy(user, vacancy_id, cv=True)
+            self.apply_for_vacancy(user, vacancy_id, call=call)
 
         elif action == "VacInfo":
             self.send_vacancy_info(user, call=call)
@@ -144,10 +143,64 @@ class UserSection(Section):
         self.bot.send_message(user.chat_id, text="Test")
 
     def apply_for_vacancy(
-        self, call: CallbackQuery, user: User, vacancy_id, cv=False, basic=False
+        self, user: User, vacancy_id: str, call: CallbackQuery = None
     ):
-        # TODO do apply for vacancy
-        pass
+        vacancy = Vacancy.objects.with_id(vacancy_id)
+        hr = vacancy.company.HR
+
+        # if there is no hr
+        if hr is None:
+            print(
+                f"{vacancy.company.name} не має HR при подачі на вакансію {vacancy.name}"
+            )
+            self.bot.send_message(
+                user.chat_id,
+                text="Ой, ця вакансія не робоча :(\nСпробуй знайти іншу, а цю я поки приберу.",
+            )
+            return
+
+        # check if user has CV
+        if user.cv_file_id is None:
+            answer_no_cv = "Потрібно добавити своє резюме!"
+            self.bot.send_message(user.chat_id, text=answer_no_cv)
+            return
+
+        # check if user hasn't applied for vacancy yet
+        user_prev_apply = VacancyApplyLog.objects.filter(
+            user=user, vacancy=vacancy
+        ).first()
+        if user_prev_apply is not None:
+            answer_double_apply = "Ти вже подавався сюди!"
+            self.bot.send_message(user.chat_id, text=answer_double_apply)
+            return
+
+        # TODO ? check apply_count of user
+
+        # save info about apply to DB
+        new_user_apply = VacancyApplyLog(
+            vacancy=vacancy, user=user, apply_datetime=utils.get_now()
+        )
+        new_user_apply.save(force_insert=True)
+
+        # Send info about apply to user
+        message_to_user = (
+            f"Твоє резюме надіслано менеджеру {vacancy.company.name}!\n"
+            f"Щоб переглянути свої подачі, натискай команду /vacancy_applies"
+        )
+        self.bot.send_message(user.chat_id, text=message_to_user)
+
+        # Send info about apply to HR
+        message_to_hr = f"Нова подача на вакансію <b>{vacancy.name}</b>"
+        info_btn_name = "Переглянути"
+        info_btn_callback = self.form_hr_callback(
+            action="ApplyInfo", vacancy_id=vacancy_id, edit=True
+        )
+        apply_info_markup = InlineKeyboardMarkup().add(
+            InlineKeyboardButton(text=info_btn_name, callback_data=info_btn_callback)
+        )
+        self.bot.send_message(
+            hr.chat_id, text=message_to_hr, reply_markup=apply_info_markup
+        )
 
     def send_vacancy_info(
         self,
@@ -217,7 +270,7 @@ class UserSection(Section):
         # apply with CV button
         btn_text = "Податися за допомогою CV"
         btn_callback = self.form_user_callback(
-            action="ApplyCV", vacancy_id=vacancy.id, edit=True
+            action="ApplyVacancy", vacancy_id=vacancy.id, edit=True
         )
         btn_cv = InlineKeyboardButton(text=btn_text, callback_data=btn_callback)
         vacancy_menu_markup.add(btn_cv)

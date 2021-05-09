@@ -2,11 +2,11 @@ from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 from telebot.util import generate_random_token
 from telebot import TeleBot
 
-from datetime import datetime, timezone
 from typing import Callable
 
 from ..data import Company, User, Vacancy, Quiz
 from ..sections.section import Section
+from ..staff import utils
 from ..objects import quiz
 
 
@@ -54,7 +54,7 @@ def _save_company(user: User, container: dict):
     if company is None:
         company = Company()
 
-        company.registration_date = datetime.now(tz=timezone.utc)
+        company.registration_date = utils.get_now()
         company.token = generate_random_token()
 
     if "name" in container:

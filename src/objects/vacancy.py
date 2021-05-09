@@ -1,6 +1,7 @@
 from typing import Iterator
 from ..data import User, Vacancy, Quiz, Company, Data
 from ..objects import quiz
+from ..staff import utils
 
 from typing import Callable
 from datetime import datetime, timezone
@@ -70,15 +71,18 @@ def create_vacancy_telegraph_page(vacancy: Vacancy, telegraph_account: Telegraph
     author_name = telegraph_account.get_account_info()["author_name"]
     author_url = telegraph_account.get_account_info()["author_url"]
 
-    response = telegraph_account.create_page(
-        title=title,
-        html_content=html_content,
-        author_name=author_name,
-        author_url=author_url,
-    )
+    try:
+        response = telegraph_account.create_page(
+            title=title,
+            html_content=html_content,
+            author_name=author_name,
+            author_url=author_url,
+        )
 
-    vacancy.telegraph_link_token = response["path"]
-    vacancy.save()
+        vacancy.telegraph_link_token = response["path"]
+        vacancy.save()
+    except Exception as e:
+        print(e)
 
 
 def create_vacancy_telegraph_page_button(vacancy: Vacancy) -> InlineKeyboardButton:
@@ -119,7 +123,7 @@ def _save_vacancy(user: User, container: dict):
         vacancy = Vacancy()
         vacancy.company = company
 
-        date = datetime.now(tz=timezone.utc)
+        date = utils.get_now()
         vacancy.add_date = date
         vacancy.last_update_date = date
 

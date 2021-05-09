@@ -1,8 +1,9 @@
 from telebot.types import CallbackQuery
 
-from ..data import Data, User, Company, Vacancy
+from ..data import Data, User, Company, Vacancy, VacancyApplyLog
 from .section import Section
 from ..objects import vacancy, quiz
+from ..staff import utils
 from telebot.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -40,8 +41,19 @@ class HRSection(Section):
         elif action == "AddVacancy":
             self.add_new_vacancy(user)
 
+        elif action == "ApplyInfo":
+            self.send_vacancy_apply_info(user, call)
+
+        elif action == "ApplyList":
+            self.answer_in_development(call)
+
+        elif action == "GetCV":
+            self.send_user_cv(user, call)
+
         else:
             pass
+
+        self.bot.answer_callback_query(call.id)
 
     def process_text(self, text):
         pass
@@ -128,6 +140,35 @@ class HRSection(Section):
                 call, vac_text, photo=company_photo, reply_markup=vac_list_markup
             )
 
+    def send_vacancy_apply_info(self, user: User, call: CallbackQuery):
+        vacancy_id = call.data.split(";")[4]
+
+        # get objects from db
+        vacancy = Vacancy.objects.with_id(vacancy_id)
+        vacancy_apply_log = VacancyApplyLog.objects.filter(vacancy=vacancy).first()
+
+        # update apply vacancy apply log
+        vacancy_apply_log.last_view_datetime = utils.get_now()
+        vacancy_apply_log.view_count += 1
+
+        # form text
+        apply_datetime = vacancy_apply_log.apply_datetime.strftime("%m/%d/%Y, %H:%M")
+        apply_info = (
+            f"<b>{vacancy.name}</b>\n\n" f"<b>Дата подачі</b> - {apply_datetime}"
+        )
+
+        # form markup
+        markup = self._form_vac_apply_info_markup(vacancy_apply_log.user)
+
+        self.send_message(call, text=apply_info, reply_markup=markup)
+
+    def send_user_cv(self, user: User, call: CallbackQuery):
+        applied_user_id = call.data.split(";")[2]
+        applied_user = User.objects.with_id(applied_user_id)
+        cv_file_id = applied_user.cv_file_id
+
+        self.bot.send_document(user.chat_id, data=cv_file_id)
+
     def add_new_vacancy(self, user: User):
         vacancy.start_add_vacancy_quiz(
             user,
@@ -194,7 +235,7 @@ class HRSection(Section):
             vac_list_markup.add(vacancy_button)
 
         # Add new vacancy btn
-        btn_text = "➕Добавити нову➕"
+        btn_text = "Добавити нову"
         btn_callback = self.form_hr_callback(action="AddVacancy", edit=True)
         btn_new_vacancy = InlineKeyboardButton(btn_text, callback_data=btn_callback)
 
@@ -205,3 +246,22 @@ class HRSection(Section):
         vac_list_markup.add(btn_back, btn_new_vacancy)
 
         return vac_list_markup
+
+    def _form_vac_apply_info_markup(self, applied_user) -> InlineKeyboardMarkup:
+        markup = InlineKeyboardMarkup()
+
+        # get CV btn
+        btn_text = "Отримати резюме"
+        btn_callback = self.form_hr_callback(
+            action="GetCV", user_id=applied_user.id, new=True
+        )
+        btn = InlineKeyboardButton(btn_text, callback_data=btn_callback)
+        markup.add(btn)
+
+        # back to applies list
+        btn_text = "Список подач"
+        btn_callback = self.form_hr_callback(action="ApplyList", edit=True)
+        btn = InlineKeyboardButton(btn_text, callback_data=btn_callback)
+        markup.add(btn)
+
+        return markup

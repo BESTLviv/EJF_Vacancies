@@ -68,18 +68,3 @@ def process_tests_text(
             user.chat_id,
             text=f"Заблоковано нових {blocked_counter}\nРозблоковано нових {unblocked_counter}",
         )
-
-
-from telegraph import Telegraph
-
-
-tel = Telegraph()
-
-tel.create_account(short_name="Yaroslav", author_name="Yaroslav")
-
-# response = tel.create_page("Hey", html_content="<p>Hello, world!</p>")
-
-old_page = tel.get_page(path="Hey-05-08-17")
-
-# print("https://telegra.ph/{}".format(response["path"]))
-print(old_page)
