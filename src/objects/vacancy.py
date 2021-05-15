@@ -31,6 +31,37 @@ def start_add_vacancy_quiz(
     )
 
 
+def change_vacancy_info(
+    field: str,
+    vacancy_name: str,
+    user: User,
+    bot: TeleBot,
+    next_step: Callable,
+    telegraph_account: Telegraph,
+):
+    vacancy_quiz = Quiz.objects.filter(name="VacancyQuiz").first()
+
+    # find right question in quiz
+    for question in vacancy_quiz.questions:
+        if question.name == field:
+            vacancy_quiz_question = [question]
+            break
+
+    quiz_iterator = iter(vacancy_quiz_question)
+    question = next(quiz_iterator)
+
+    quiz.send_question(
+        user,
+        bot,
+        question,
+        quiz_iterator,
+        save_func=_save_vacancy,
+        final_func=next_step,
+        container={"name": vacancy_name, "telegraph": telegraph_account},
+        is_required=vacancy_quiz.is_required,
+    )
+
+
 def form_vacancy_info(vacancy: Vacancy, status: bool) -> str:
 
     vacancy_description = (

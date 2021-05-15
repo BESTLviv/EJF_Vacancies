@@ -610,6 +610,16 @@ class Vacancy(me.Document):
     active_days_left = me.IntField(default=14)
     is_active = me.BooleanField(default=True)
 
+    @staticmethod
+    def get_editable_field_info() -> dict:
+        return {
+            "tag": "Категорія",
+            "salary": "Заробітня плата",
+            "experience": "Досвід роботи",
+            "employment_type": "Тип працевлаштування",
+            "description": "Опис",
+        }
+
 
 class Question(me.EmbeddedDocument):
     name = me.StringField(required=True)

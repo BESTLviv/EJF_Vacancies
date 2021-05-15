@@ -47,6 +47,9 @@ class HRSection(Section):
         elif action == "VacancyEditMenu":
             self.send_edit_vacancy_menu(user, call)
 
+        elif action.startswith("VacChange"):
+            self.change_vacancy_info(user, call)
+
         elif action == "CompanyInfo":
             pass
 
@@ -190,7 +193,30 @@ class HRSection(Section):
         self.answer_in_development(call)
 
     def send_edit_vacancy_menu(self, user: User, call: CallbackQuery):
-        self.answer_in_development(call)
+        vacancy_id = call.data.split(";")[4]
+        vacancy = Vacancy.objects.with_id(vacancy_id)
+
+        text = "Вибирай поле, яке потрібно відредагувати:"
+        photo = vacancy.company.photo_id
+        markup = self._form_vacancy_edit_menu_markup(vacancy=vacancy)
+
+        self.send_message(call, text, photo, markup)
+
+    def change_vacancy_info(self, user: User, call: CallbackQuery):
+        action = call.data.split(";")[1]
+        vacancy_id = call.data.split(";")[4]
+        vacancy = Vacancy.objects.with_id(vacancy_id)
+
+        field_to_change = action.split("-")[1]
+
+        vacancy_module.change_vacancy_info(
+            field=field_to_change,
+            vacancy_name=vacancy.name,
+            user=user,
+            bot=self.bot,
+            next_step=None,
+            telegraph_account=self.data.telegraph,
+        )
 
     def send_vacancy_apply_info(self, user: User, call: CallbackQuery):
         vacancy_id = call.data.split(";")[4]
@@ -387,6 +413,30 @@ class HRSection(Section):
         )
 
         return vacancy_description
+
+    def _form_vacancy_edit_menu_markup(self, vacancy: Vacancy) -> InlineKeyboardMarkup:
+
+        vacancy_edit_menu_markup = InlineKeyboardMarkup()
+
+        editable_field_info = Vacancy.get_editable_field_info()
+
+        # field buttons
+        for edit_field, btn_name in editable_field_info.items():
+            action = f"VacChange-{edit_field}"
+            btn_callback = self.form_hr_callback(
+                action, vacancy_id=vacancy.id, edit=True
+            )
+            btn = InlineKeyboardButton(btn_name, callback_data=btn_callback)
+            vacancy_edit_menu_markup.add(btn)
+
+        # back button
+        back_btn_callback = self.form_hr_callback(
+            action="VacInfo", vacancy_id=vacancy.id, edit=True
+        )
+        back_btn = self.create_back_button(back_btn_callback)
+        vacancy_edit_menu_markup.add(back_btn)
+
+        return vacancy_edit_menu_markup
 
     def _form_vac_apply_info_markup(self, applied_user) -> InlineKeyboardMarkup:
         markup = InlineKeyboardMarkup()
