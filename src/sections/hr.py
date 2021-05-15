@@ -2,7 +2,7 @@ from telebot.types import CallbackQuery
 
 from ..data import Data, User, Company, Vacancy, VacancyApplyLog
 from .section import Section
-from ..objects import vacancy, quiz
+from ..objects import vacancy as vacancy_module, quiz
 from ..staff import utils
 from telebot.types import (
     InlineKeyboardButton,
@@ -26,20 +26,32 @@ class HRSection(Section):
         if action == "StartMenu":
             self.send_start_menu(user, call)
 
-        elif action == "VacList":
+        elif action == "VacancyList":
             self.send_vacancy_list(user, call)
+
+        elif action == "AddVacancy":
+            self.add_new_vacancy(user)
+
+        elif action == "VacInfo":
+            self.send_vacancy_info(user, call)
+
+        elif action == "DeleteVacancy":
+            self.delete_vacancy(user, call)
+
+        elif action == "ChangeVacancyStatus":
+            self.change_vacancy_status(user, call)
+
+        elif action == "VacancyStatistics":
+            self.send_vacancy_statistics(user, call)
+
+        elif action == "VacancyEditMenu":
+            self.send_edit_vacancy_menu(user, call)
 
         elif action == "CompanyInfo":
             pass
 
         elif action == "QuitHR":
             self.exit_hr(user, call)
-
-        elif action == "VacInfo":
-            pass
-
-        elif action == "AddVacancy":
-            self.add_new_vacancy(user)
 
         elif action == "ApplyInfo":
             self.send_vacancy_apply_info(user, call)
@@ -140,6 +152,46 @@ class HRSection(Section):
                 call, vac_text, photo=company_photo, reply_markup=vac_list_markup
             )
 
+    def send_vacancy_info(self, user: User, call: CallbackQuery = None):
+        vacancy_id = call.data.split(";")[4]
+        vacancy = Vacancy.objects.with_id(vacancy_id)
+
+        company_photo = vacancy.company.photo_id
+
+        vacancy_description = self._form_vacancy_info(vacancy=vacancy)
+        markup = self._form_vacancy_menu_markup(vacancy)
+
+        self.send_message(
+            call, photo=company_photo, text=vacancy_description, reply_markup=markup
+        )
+
+    def delete_vacancy(self, user: User, call: CallbackQuery):
+        vacancy_id = call.data.split(";")[4]
+        vacancy = Vacancy.objects.with_id(vacancy_id)
+
+        result = vacancy_module.delete_vacancy(vacancy)
+
+        # change call callback data to send previous menu
+        call.data = self.form_hr_callback(action="VacancyList", edit=True)
+
+        self.bot.answer_callback_query(call.id, text=result)
+
+        self.send_vacancy_list(user, call)
+
+    def change_vacancy_status(self, user: User, call: CallbackQuery):
+        vacancy_id = call.data.split(";")[4]
+
+        vacancy = Vacancy.objects.with_id(vacancy_id)
+        vacancy_module.change_vacancy_status(vacancy)
+
+        self.send_vacancy_info(user, call)
+
+    def send_vacancy_statistics(self, user: User, call: CallbackQuery):
+        self.answer_in_development(call)
+
+    def send_edit_vacancy_menu(self, user: User, call: CallbackQuery):
+        self.answer_in_development(call)
+
     def send_vacancy_apply_info(self, user: User, call: CallbackQuery):
         vacancy_id = call.data.split(";")[4]
 
@@ -170,7 +222,7 @@ class HRSection(Section):
         self.bot.send_document(user.chat_id, data=cv_file_id)
 
     def add_new_vacancy(self, user: User):
-        vacancy.start_add_vacancy_quiz(
+        vacancy_module.start_add_vacancy_quiz(
             user,
             bot=self.bot,
             next_step=self.send_vacancy_list,
@@ -194,7 +246,7 @@ class HRSection(Section):
 
         # my vacancies
         btn_text1 = "Мої вакансії"
-        btn_callback_vaclist = self.form_hr_callback(action="VacList", edit=True)
+        btn_callback_vaclist = self.form_hr_callback(action="VacancyList", edit=True)
         btn_my_vacancies = InlineKeyboardButton(
             btn_text1, callback_data=btn_callback_vaclist
         )
@@ -229,7 +281,7 @@ class HRSection(Section):
         for vacancy in vacancy_list:
             button_text = vacancy.name
             callback = self.form_hr_callback(
-                action="VacInfo", vacancy_id=vacancy.id, new=True
+                action="VacInfo", vacancy_id=vacancy.id, edit=True
             )
             vacancy_button = InlineKeyboardButton(button_text, callback_data=callback)
             vac_list_markup.add(vacancy_button)
@@ -246,6 +298,95 @@ class HRSection(Section):
         vac_list_markup.add(btn_back, btn_new_vacancy)
 
         return vac_list_markup
+
+    def _form_vacancy_menu_markup(self, vacancy: Vacancy) -> InlineKeyboardMarkup:
+
+        vacancy_menu_markup = InlineKeyboardMarkup()
+
+        company_id = vacancy.company.id
+
+        # full info
+        full_info_btn = vacancy_module.create_vacancy_telegraph_page_button(vacancy)
+        vacancy_menu_markup.add(full_info_btn)
+
+        # delete vacancy
+        btn_text = "Видалити вакансію"
+        btn_callback = self.form_hr_callback(
+            action="DeleteVacancy",
+            vacancy_id=vacancy.id,
+            delete=True,
+        )
+        delete_vacancy_btn = InlineKeyboardButton(
+            text=btn_text, callback_data=btn_callback
+        )
+        vacancy_menu_markup.add(delete_vacancy_btn)
+
+        # on\off
+        if vacancy.is_active:
+            btn_text = "Дезактивувати"
+        else:
+            btn_text = "Активувати"
+        btn_callback = self.form_hr_callback(
+            action="ChangeVacancyStatus", vacancy_id=vacancy.id, edit=True
+        )
+        change_state_btn = InlineKeyboardButton(
+            text=btn_text, callback_data=btn_callback
+        )
+        vacancy_menu_markup.add(change_state_btn)
+
+        # statistics
+        btn_text = "Статистика"
+        btn_callback = self.form_hr_callback(
+            action="VacancyStatistics", vacancy_id=vacancy.id, edit=True
+        )
+        vacancy_statistics_btn = InlineKeyboardButton(
+            text=btn_text, callback_data=btn_callback
+        )
+        vacancy_menu_markup.add(vacancy_statistics_btn)
+
+        # edit vacancy menu
+        btn_text = "Редагувати вакансію"
+        btn_callback = self.form_hr_callback(
+            action="VacancyEditMenu", vacancy_id=vacancy.id, edit=True
+        )
+        edit_vacancy_menu_btn = InlineKeyboardButton(
+            text=btn_text, callback_data=btn_callback
+        )
+        vacancy_menu_markup.add(edit_vacancy_menu_btn)
+
+        # back button
+        company = vacancy.company
+        btn_callback = self.form_hr_callback(
+            action="VacancyList", company_id=company.id, edit=True
+        )
+        btn_back = self.create_back_button(btn_callback)
+        vacancy_menu_markup.add(btn_back)
+
+        return vacancy_menu_markup
+
+    def _form_vacancy_info(self, vacancy: Vacancy) -> str:
+        vacancy_description = (
+            f"{vacancy.name}\n"
+            f"<b>Категорія</b>: {vacancy.tag}\n"
+            f"<b>Досвід</b>: {vacancy.experience}\n"
+            f"<b>Зарплата</b>: {vacancy.salary}\n"
+            f"<b>Робочий день</b>: {vacancy.employment_type}\n"
+            # f"<b>Опис</b>: \n{vacancy.description}\n"
+        )
+
+        if vacancy.is_active:
+            is_active = "Активовано"
+            # vacancy_description += f"<b>Вакансія дезактивується через: </b>: {vacancy.active_days_left} днів\n"
+        else:
+            is_active = "Дезактивовано"
+
+        vacancy_description += (
+            f"<b>Статус</b>: {is_active}\n"
+            f"<b>Додано</b>: {vacancy.add_date}\n"
+            # f"<b>Оновлено</b>: {vacancy.last_update_date}\n"
+        )
+
+        return vacancy_description
 
     def _form_vac_apply_info_markup(self, applied_user) -> InlineKeyboardMarkup:
         markup = InlineKeyboardMarkup()

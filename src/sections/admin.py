@@ -173,12 +173,12 @@ class AdminSection(Section):
 
     def send_vacancy_info(self, call: CallbackQuery, user: User):
         vacancy_id = call.data.split(";")[4]
-        vac = Vacancy.objects.with_id(vacancy_id)
+        vacancy = Vacancy.objects.with_id(vacancy_id)
 
-        company_photo = vac.company.photo_id
+        company_photo = vacancy.company.photo_id
 
-        vacancy_description = vacancy_module.form_vacancy_info(vacancy=vac, status=True)
-        markup = self._form_vacancy_menu_markup(vacancy_id)
+        vacancy_description = vacancy_module.form_vacancy_info(vacancy=vacancy, status=True)
+        markup = self._form_vacancy_menu_markup(vacancy)
 
         self.send_message(
             call, photo=company_photo, text=vacancy_description, reply_markup=markup
@@ -529,11 +529,10 @@ class AdminSection(Section):
 
         return company_menu_markup
 
-    def _form_vacancy_menu_markup(self, vacancy_id) -> InlineKeyboardMarkup:
+    def _form_vacancy_menu_markup(self, vacancy: Vacancy) -> InlineKeyboardMarkup:
 
         vacancy_menu_markup = InlineKeyboardMarkup()
 
-        vacancy = Vacancy.objects.with_id(vacancy_id)
         company_id = vacancy.company.id
 
         # full info
