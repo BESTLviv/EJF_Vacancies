@@ -122,7 +122,7 @@ class HRSection(Section):
     def send_start_menu(self, user: User, call: CallbackQuery = None):
         company = Company.objects.filter(HR=user).first()
 
-        text = "Привіт HR!"
+        text = ""
         photo = company.photo_id
         start_markup = self._form_start_markup(user)
 
@@ -139,7 +139,7 @@ class HRSection(Section):
     def send_vacancy_list(self, user: User, call: CallbackQuery = None):
         company = Company.objects.filter(HR=user).first()
 
-        vac_text = "Вакансії"
+        vac_text = "Список ваших вакансій"
         company_photo = company.photo_id
         vac_list_markup = self._form_vac_list_markup(user, company)
 
@@ -196,7 +196,10 @@ class HRSection(Section):
         vacancy_id = call.data.split(";")[4]
         vacancy = Vacancy.objects.with_id(vacancy_id)
 
-        text = "Вибирай поле, яке потрібно відредагувати:"
+        text = (
+            f"{self._form_vacancy_info(vacancy)}\n"
+            "Вибирай поле, яке потрібно відредагувати:"
+        )
         photo = vacancy.company.photo_id
         markup = self._form_vacancy_edit_menu_markup(vacancy=vacancy)
 
@@ -313,7 +316,7 @@ class HRSection(Section):
             vac_list_markup.add(vacancy_button)
 
         # Add new vacancy btn
-        btn_text = "Добавити нову"
+        btn_text = "Додати нову"
         btn_callback = self.form_hr_callback(action="AddVacancy", edit=True)
         btn_new_vacancy = InlineKeyboardButton(btn_text, callback_data=btn_callback)
 
@@ -392,7 +395,7 @@ class HRSection(Section):
 
     def _form_vacancy_info(self, vacancy: Vacancy) -> str:
         vacancy_description = (
-            f"{vacancy.name}\n"
+            f"<b>{vacancy.name}</b>\n\n"
             f"<b>Категорія</b>: {vacancy.tag}\n"
             f"<b>Досвід</b>: {vacancy.experience}\n"
             f"<b>Зарплата</b>: {vacancy.salary}\n"
@@ -406,9 +409,11 @@ class HRSection(Section):
         else:
             is_active = "Дезактивовано"
 
+        add_date = vacancy.add_date.strftime("%d/%m/%Y, %H:%M")
+
         vacancy_description += (
             f"<b>Статус</b>: {is_active}\n"
-            f"<b>Додано</b>: {vacancy.add_date}\n"
+            f"<b>Додано</b>: {add_date}\n"
             # f"<b>Оновлено</b>: {vacancy.last_update_date}\n"
         )
 

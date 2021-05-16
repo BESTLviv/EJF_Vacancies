@@ -116,6 +116,11 @@ class Data:
             self._add_vacancy_quiz()
             print("Vacancy quiz has been added")
 
+        # add vacancy quiz
+        if Quiz.objects.filter(name="VacancyEditQuiz").count() == 0:
+            self._add_vacancy_edit_quiz()
+            print("Vacancy edit quiz has been added")
+
         # add company quiz
         if Quiz.objects.filter(name="CompanyQuiz").count() == 0:
             self._add_company_quiz()
@@ -291,6 +296,65 @@ class Data:
 
         quiz.questions = [
             q_name,
+            q_tag,
+            q_experience,
+            q_employment,
+            q_salary,
+            q_description,
+        ]
+
+        quiz.save()
+
+    def _add_vacancy_edit_quiz(self):
+        quiz = Quiz(name="VacancyEditQuiz", is_required=False)
+
+        ejf = self.get_ejf()
+
+        q_tag = Question(
+            name="tag",
+            message="Вибери категорію до якої відноситься вакансія",
+            buttons=list(ejf.filters_interest),
+            correct_answer_message="Ого, круто 🥰",
+            wrong_answer_message="Не треба так робити",
+            allow_user_input=False,
+        )
+
+        q_experience = Question(
+            name="experience",
+            message="Вибери наскільки досвідченим має бути твій новий працівник!",
+            buttons=list(ejf.filters_experience),
+            correct_answer_message="Ого, круто 🥰",
+            wrong_answer_message="Не треба так робити",
+            allow_user_input=False,
+        )
+
+        q_employment = Question(
+            name="employment_type",
+            message="Вибери тип зайнятості",
+            buttons=list(ejf.filters_employment),
+            correct_answer_message="Ого, круто 🥰",
+            wrong_answer_message="Не треба так робити",
+            allow_user_input=False,
+        )
+
+        q_salary = Question(
+            name="salary",
+            message="Введи скільки зароблятиме твій працівник",
+            max_text_size=30,
+            buttons=["Договірно"],
+            correct_answer_message="Ого, круто 🥰",
+            wrong_answer_message="Не треба так робити",
+        )
+
+        q_description = Question(
+            name="description",
+            message="Лишився останній штрих!\nНадішли мені стислий опис своєї вакансії, щоб кандидат міг зрозуміти, чим він буде займатись.\n\n<b>Максимум 2000 символів</b>",
+            max_text_size=2000,
+            correct_answer_message="Клас 🥰",
+            wrong_answer_message="Введи опис текстом і не більше 2000 символів 🤡",
+        )
+
+        quiz.questions = [
             q_tag,
             q_experience,
             q_employment,

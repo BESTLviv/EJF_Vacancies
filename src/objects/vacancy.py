@@ -39,7 +39,7 @@ def change_vacancy_info(
     next_step: Callable,
     telegraph_account: Telegraph,
 ):
-    vacancy_quiz = Quiz.objects.filter(name="VacancyQuiz").first()
+    vacancy_quiz = Quiz.objects.filter(name="VacancyEditQuiz").first()
 
     # find right question in quiz
     for question in vacancy_quiz.questions:
@@ -91,12 +91,14 @@ def form_vacancy_info(vacancy: Vacancy, status: bool) -> str:
 def create_vacancy_telegraph_page(vacancy: Vacancy, telegraph_account: Telegraph):
     title = vacancy.name
 
+    parsed_description = vacancy.description.replace("\n", "<br>")
+
     html_content = (
-        f"<b>Категорія</b>: {vacancy.tag}"
-        f"<b>Досвід</b>: {vacancy.experience}\n"
-        f"<b>Зарплата</b>: {vacancy.salary}\n"
-        f"<b>Робочий день</b>: {vacancy.employment_type}\n"
-        f"<b>Опис</b>: \n{vacancy.description}\n"
+        f"<b>Категорія</b>: {vacancy.tag}<br>"
+        f"<b>Досвід</b>: {vacancy.experience}<br>"
+        f"<b>Зарплата</b>: {vacancy.salary}<br>"
+        f"<b>Робочий день</b>: {vacancy.employment_type}<br>"
+        f"<h3>Опис</h3>{parsed_description}<br>"
     )
 
     author_name = telegraph_account.get_account_info()["author_name"]

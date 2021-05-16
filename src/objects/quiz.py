@@ -237,8 +237,9 @@ def _create_answer_markup(question: Question, is_required: bool) -> ReplyKeyboar
     answer_markup = ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
 
     if question.input_type == "text":
+        columns = 2 if len(question.buttons) < 8 else 3
         for row in utils.reply_keyboard_columns_generator(
-            list(question.buttons), col=2
+            list(question.buttons), col=columns
         ):
             answer_markup.add(*row)
 
