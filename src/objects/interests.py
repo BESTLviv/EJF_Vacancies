@@ -27,7 +27,7 @@ def update_user(call: CallbackQuery, user_list, ejf_list, only_one=False):
 
 
 # @utils.time_check
-def create_interests_markup(user: User, col_number: int = 3):
+def create_interests_markup(user: User, col_number: int = 2):
     all_interests = JobFair.objects.first().filters_interest
 
     interest_markup = InlineKeyboardMarkup()

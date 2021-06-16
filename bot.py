@@ -70,8 +70,8 @@ def start_bot(message):
 
         # If user is basic user
         else:
-            job_fair_section.send_start_menu(user)
-            # user_section.send_start_menu(user=user)
+            # job_fair_section.send_start_menu(user)
+            user_section.send_start_menu(user=user)
 
     except Exception as e:
         print(f"Exception during start - {e}")
@@ -132,6 +132,10 @@ def handle_text_buttons(message):
         elif message_text.startswith("login_"):
             hr_section.register_hr(user, login_str=message_text)
 
+        # TEMP: change bot type
+        elif message.text == "affnpafbnarcuibraicpairfbiryfg":
+            utils._temp_change_bot_mode(user_section)
+
         else:
             pass  # answer user that it was invalid input (in utils.py maybe)
 
@@ -175,7 +179,7 @@ def send_welcome_message_and_start_quiz(user: User):
     welcome_photo = ejf.content.start_photo
     bot.send_photo(user.chat_id, photo=welcome_photo, caption=welcome_text)
 
-    final_func = job_fair_section.send_start_menu
+    final_func = user_section.send_start_menu
 
     # if Job Fair not ended
     # if user.last_interaction_date < data.JOB_FAIR_END_TIME:

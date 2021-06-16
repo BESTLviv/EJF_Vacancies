@@ -334,6 +334,13 @@ class HRSection(Section):
     def _form_start_markup(self, user: User) -> InlineKeyboardMarkup:
         start_markup = InlineKeyboardMarkup()
 
+        # company info
+        company = Company.objects.filter(HR=user).first()
+        company_info_btn = InlineKeyboardButton(
+            text="Про компанію", url=company.company_url
+        )
+        start_markup.add(company_info_btn)
+
         # my vacancies
         btn_text1 = "Мої вакансії"
         btn_callback_vaclist = self.form_hr_callback(action="VacancyList", edit=True)

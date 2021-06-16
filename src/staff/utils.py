@@ -2,6 +2,7 @@ from telebot.types import Message, KeyboardButton, CallbackQuery
 from telebot import TeleBot
 
 from ..data import User, JobFair
+from ..sections.user import UserSection
 
 
 import requests
@@ -10,6 +11,16 @@ import shutil
 import os
 import time
 from datetime import datetime, timezone
+
+
+def _temp_change_bot_mode(user_section: UserSection):
+    users = User.objects.filter(is_blocked=False)
+
+    for user in users:
+        try:
+            user_section.send_start_menu(user)
+        except Exception as e:
+            print(f"{user.username} - {e}")
 
 
 def get_user_type(message: Message):

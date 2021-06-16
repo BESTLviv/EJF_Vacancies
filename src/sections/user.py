@@ -46,6 +46,9 @@ class UserSection(Section):
         elif action == "Employment":
             self.send_filters_menu(call, user, employment=True)
 
+        elif action == "CV":
+            self.send_cv_request(call, user)
+
         else:
             self.answer_wrong_action(call)
 
@@ -71,12 +74,12 @@ class UserSection(Section):
         ejf = self.data.get_ejf()
 
         btn_vacancy = KeyboardButton(text=self.TEXT_BUTTONS[0])
-        btn_who = KeyboardButton(text=self.TEXT_BUTTONS[1])
+        # btn_who = KeyboardButton(text=self.TEXT_BUTTONS[1])
         btn_profile = KeyboardButton(text=self.TEXT_BUTTONS[2])
 
         markup = ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add(btn_vacancy)
-        markup.add(btn_who, btn_profile)
+        markup.add(btn_profile)
 
         self.bot.send_photo(
             user.chat_id,
@@ -87,10 +90,7 @@ class UserSection(Section):
 
     def send_profile_menu(self, user: User, call: CallbackQuery = None):
         text_message = """
-            Налаштуй критерії, сучка 😈.
-            
-            Резюме не закинув, тому вакансій для тебе немає, дОпобАчення!
-            Підеш в Глово)
+
         """
         text_message += self._form_profile_vacancy_count_text(user)
 
@@ -254,6 +254,12 @@ class UserSection(Section):
                 reply_markup=vacancy_info_menu_markup,
             )
 
+    def send_cv_request(self, user: User, call: CallbackQuery):
+        text = "Надсилай сюди резюме — PDF не більше 5МБ."
+        photo = "https://i.ibb.co/x7mxtk5/bot-06.png"
+
+        self.send_message(call, text=text, photo=photo)
+
     def _get_vacancy_list_by_filters(self, user: User):
         return Vacancy.objects.filter(
             tag__in=user.interests,
@@ -270,6 +276,12 @@ class UserSection(Section):
         # full info
         full_info_btn = vacancy_module.create_vacancy_telegraph_page_button(vacancy)
         vacancy_menu_markup.add(full_info_btn)
+
+        # company info
+        company_info_btn = InlineKeyboardButton(
+            text="Про компанію", url=vacancy.company.company_url
+        )
+        vacancy_menu_markup.add(company_info_btn)
 
         # apply with CV button
         btn_text = "Податися за допомогою CV"
