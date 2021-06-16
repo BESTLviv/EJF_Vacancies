@@ -213,7 +213,7 @@ class UserSection(Section):
         vacancies = self._get_vacancy_list_by_filters(user=user)
 
         # check if any vacancies exist
-        if vacancies.count() == 0:
+        if vacancies.count() == 0 and spec_vacancy is None:
             self.bot.send_message(
                 user.chat_id,
                 text="За вибраними критеріями не знайдено жодної вакансії :(\nПереходь в меню 'Профіль'",

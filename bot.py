@@ -195,4 +195,14 @@ def send_welcome_message_and_start_quiz(user: User):
 if __name__ == "__main__":
     updater.start_update_threads()
 
+    ejf_table = data.get_ejf()
+    users = User.objects
+    for i, user in enumerate(users):
+        user.interests = ejf_table.filters_interest
+        user.experience = ejf_table.filters_experience
+        user.employment = ejf_table.filters_employment
+
+        user.save()
+        print(f"Updating {i+1}/{len(users)}")
+
     bot.polling(none_stop=True)
