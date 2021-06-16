@@ -2,6 +2,7 @@ from telebot.types import CallbackQuery
 
 from ..data import Data, User, Company, Vacancy, VacancyApplyLog
 from .section import Section
+from .user import UserSection  ###### bad thing
 from ..objects import vacancy as vacancy_module, quiz
 from ..staff import utils
 from telebot.types import (
@@ -46,6 +47,9 @@ class HRSection(Section):
 
         elif action == "VacancyEditMenu":
             self.send_edit_vacancy_menu(user, call)
+
+        elif action == "VacancyPromote":
+            self.promote_vacancy(user, call)
 
         elif action.startswith("VacChange"):
             self.change_vacancy_info(user, call)
@@ -270,6 +274,63 @@ class HRSection(Section):
         text = f"Ти успішно вийшов з компанії {company.name}!\n"
         self.send_message(call, text=text)
 
+    def promote_vacancy(self, user: User, call: CallbackQuery):
+
+        # check promote limit
+        company = Company.objects.filter(HR=user).first()
+        if company.promote_counter == 0:
+            self.send_message(
+                call, text="Можна здійснювати лише один промоут вакансії в день."
+            )
+            return
+
+        # update company promote counter
+        company.promote_counter -= 1
+        company.save()
+
+        # get target users list
+        vacancy_id = call.data.split(";")[4]
+        vacancy = Vacancy.objects.with_id(vacancy_id)
+        target_users = User.objects.filter(is_blocked=False, hr_status=False)
+
+        # send info about sending
+        self.bot.send_message(
+            user.chat_id,
+            text="Розпочинаю процес розповсюдження вакансії...\nЦе може зайняти декілька хвилин😉",
+        )
+
+        # send vacancy to target users
+        temp_user_section = UserSection(data=self.data)
+        receivers_count = 0
+        for target_user in target_users:
+            if vacancy.tag not in list(target_user.interests):
+                continue
+
+            try:
+                temp_user_section.send_vacancy_info(
+                    user=target_user, spec_vacancy=vacancy
+                )
+            except Exception as e:
+                print(f"(Promoting exception) {user.username} {vacancy.name} - {e}")
+                target_user.is_blocked = True
+                target_user.save()
+                continue
+
+            receivers_count += 1
+
+        # final message
+        if receivers_count != 0:
+            self.bot.send_message(
+                user.chat_id,
+                text=f"Вакансію отримало {receivers_count} користувачів!\n",
+            )
+        else:
+            self.bot.send_message(
+                user.chat_id, text=f"Нажаль, в мене нічого не вийшло😞"
+            )
+            company.promote_counter += 1
+            company.save()
+
     def _form_start_markup(self, user: User) -> InlineKeyboardMarkup:
         start_markup = InlineKeyboardMarkup()
 
@@ -287,7 +348,7 @@ class HRSection(Section):
         btn_my_company = InlineKeyboardButton(
             btn_text2, callback_data=btn_callback_company
         )
-        start_markup.add(btn_my_company)
+        # start_markup.add(btn_my_company)
 
         # quit hr
         btn_text3 = "Вийти з профілю компанії"
@@ -371,7 +432,7 @@ class HRSection(Section):
         vacancy_statistics_btn = InlineKeyboardButton(
             text=btn_text, callback_data=btn_callback
         )
-        vacancy_menu_markup.add(vacancy_statistics_btn)
+        # vacancy_menu_markup.add(vacancy_statistics_btn)
 
         # edit vacancy menu
         btn_text = "Редагувати вакансію"
@@ -382,6 +443,16 @@ class HRSection(Section):
             text=btn_text, callback_data=btn_callback
         )
         vacancy_menu_markup.add(edit_vacancy_menu_btn)
+
+        # promote vacancy
+        btn_text = "Розіслати вакансію 🎯"
+        btn_callback = self.form_hr_callback(
+            action="VacancyPromote", vacancy_id=vacancy.id, new=True
+        )
+        promote_vacancy_btn = InlineKeyboardButton(
+            text=btn_text, callback_data=btn_callback
+        )
+        vacancy_menu_markup.add(promote_vacancy_btn)
 
         # back button
         company = vacancy.company

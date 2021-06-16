@@ -185,7 +185,7 @@ class UserSection(Section):
         # Send info about apply to user
         message_to_user = (
             f"Твоє резюме надіслано менеджеру {vacancy.company.name}!\n"
-            f"Щоб переглянути свої подачі, натискай команду /vacancy_applies"
+            # f"Щоб переглянути свої подачі, натискай команду /vacancy_applies"
         )
         self.bot.send_message(user.chat_id, text=message_to_user)
 
@@ -206,6 +206,7 @@ class UserSection(Section):
         self,
         user: User,
         is_random: bool = False,
+        spec_vacancy: Vacancy = None,
         call: CallbackQuery = None,
     ):
         # get vacancies list by user's filters
@@ -223,6 +224,9 @@ class UserSection(Section):
         if is_random:
             vac_index = randint(0, vacancies.count() - 1)
             vac = vacancies[vac_index]
+        elif spec_vacancy:
+            vac = spec_vacancy
+            vac_index = list(vacancies).index(vac)
         else:
             vacancy_id = call.data.split(";")[3]
             vac = Vacancy.objects.with_id(vacancy_id)

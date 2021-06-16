@@ -135,3 +135,4 @@ run.bat
 *.pdf
 Settings.ini
 fix_data.py
+etc/

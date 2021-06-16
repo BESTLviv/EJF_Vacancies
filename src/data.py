@@ -654,6 +654,7 @@ class Company(me.Document):
     description = me.StringField(required=True)
     company_url = me.StringField()
     vacancy_counter = me.IntField(default=20)  # ?
+    promote_counter = me.IntField(default=1)
     HR = me.ReferenceField(User, required=False)
     token = me.StringField(required=True)
     registration_date = me.DateTimeField(required=True)

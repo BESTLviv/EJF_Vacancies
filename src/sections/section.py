@@ -152,8 +152,8 @@ class Section:
 
                 return
 
-            except Exception:
-                return
+            except Exception as e:
+                print(f"Exception during sending message - {e}")
 
         # Send new message
         if photo is None:

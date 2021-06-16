@@ -57,7 +57,7 @@ def form_and_send_new_cv_archive(bot: TeleBot, user: User):
     ejf.save()
 
 
-def _form_max_size_archive(bot: TeleBot, max_size=50) -> str:
+def _form_max_size_archive(bot: TeleBot, max_size=40) -> str:
     MAXIMUM_FILE_SIZE = 5 * 1024 ** 2
     max_size *= 1024 ** 2
     cv_users = User.objects.filter(cv_file_id__ne=None)
@@ -86,6 +86,9 @@ def _form_max_size_archive(bot: TeleBot, max_size=50) -> str:
 
                 # save file to temp directory
                 temp_file_path = os.path.join(temp_dir_path, file_name)
+                if os.path.exists(temp_file_path):
+                    file_name = f"{file_name.split('.')[0]}{index}.pdf"
+                    temp_file_path = os.path.join(temp_dir_path, file_name)
                 with open(temp_file_path, "wb") as new_file:
                     new_file.write(downloaded_file)
 
@@ -140,15 +143,3 @@ def time_check(func):
 
 def get_now() -> datetime:
     return datetime.now(tz=timezone.utc)
-
-
-#
-# def process_message_input(message, **kwargs):
-#    """
-#    :param root_func
-#    :param next_func
-#    :param next_func_arguments
-#    """
-#    root_func = kwargs["root_func"]
-#    next_func = kwargs["next_func"]
-#    next_func_arguments = kwargs["next_func_arguments"]

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import threading
+from time import sleep
 
 from telebot.types import Message
 
@@ -8,11 +9,49 @@ from src.staff import utils
 
 
 class Updater:
+
+    UPDATE_HOUR = 8  # 8:00 every morning
+    DEFAULT_PROMOTE_COUNTER = 1
+
     def __init__(self):
         super().__init__()
 
     def start_update_threads(self):
-        pass
+
+        promote_thread = threading.Thread(target=self.promote_update_thread)
+        promote_thread.start()
+
+    def promote_update_thread(self):
+
+        try:
+            while True:
+                current_hour = datetime.now().hour
+                if current_hour != self.UPDATE_HOUR:
+                    hours_left = (
+                        self.UPDATE_HOUR - current_hour
+                        if current_hour < self.UPDATE_HOUR
+                        else 24 % current_hour + self.UPDATE_HOUR
+                    )
+
+                    print(f"Time left to promote update - {hours_left} hours")
+
+                    seconds_left = current_hour * 60 * 60
+                    sleep(seconds_left)
+
+                print("Start updating companies promotions...")
+
+                company_list = Company.objects.filter()
+                for company in company_list:
+                    company.promote_counter = self.DEFAULT_PROMOTE_COUNTER
+                    company.save()
+
+                print("Finished updating companies promotions...")
+
+                sleep(24 * 60 * 60)
+        except Exception as e:
+            print(f"(Updater exception) Promote thread - {e}")
+            promote_thread = threading.Thread(target=self.promote_update_thread)
+            promote_thread.start()
 
     def update_user_interaction_time(self, message: Message) -> User:
         user_chat_id = message.chat.id

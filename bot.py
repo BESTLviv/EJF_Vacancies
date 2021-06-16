@@ -189,6 +189,6 @@ def send_welcome_message_and_start_quiz(user: User):
 
 
 if __name__ == "__main__":
-    bot.polling(none_stop=True)
-
     updater.start_update_threads()
+
+    bot.polling(none_stop=True)
