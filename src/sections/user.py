@@ -226,7 +226,7 @@ class UserSection(Section):
             vac = vacancies[vac_index]
         elif spec_vacancy:
             vac = spec_vacancy
-            vac_index = list(vacancies).index(vac)
+            vac_index = 0 if vacancies.count() == 0 else list(vacancies).index(vac)
         else:
             vacancy_id = call.data.split(";")[3]
             vac = Vacancy.objects.with_id(vacancy_id)
@@ -301,8 +301,12 @@ class UserSection(Section):
 
         prev_vac_index = cur_vac_index - 1
 
-        prev_vac = vacancies[prev_vac_index]
-        next_vac = vacancies[next_vac_index]
+        if len(vacancies) != 0:
+            prev_vac = vacancies[prev_vac_index]
+            next_vac = vacancies[next_vac_index]
+        else:
+            prev_vac = vacancy
+            next_vac = vacancy
 
         # previous vacancy button
         btn_text = "👈"
