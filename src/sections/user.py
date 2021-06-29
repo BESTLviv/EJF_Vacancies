@@ -265,6 +265,7 @@ class UserSection(Section):
             tag__in=user.interests,
             experience__in=user.experience,
             employment_type__in=user.employment,
+            is_active=True,
         )
 
     def _form_vacancy_info_menu_markup(
