@@ -239,7 +239,9 @@ class HRSection(Section):
         # form text
         apply_datetime = vacancy_apply_log.apply_datetime.strftime("%m/%d/%Y, %H:%M")
         apply_info = (
-            f"<b>{vacancy.name}</b>\n\n" f"<b>Дата подачі</b> - {apply_datetime}"
+            f"<b>{vacancy.name}</b>\n\n"
+            f"<b>Нікнейм в телеграмі<b> - @{vacancy_apply_log.user.username}\n\n"
+            f"<b>Дата подачі</b> - {apply_datetime}"
         )
 
         # form markup

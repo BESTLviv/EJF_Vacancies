@@ -254,7 +254,7 @@ class UserSection(Section):
                 reply_markup=vacancy_info_menu_markup,
             )
 
-    def send_cv_request(self, user: User, call: CallbackQuery):
+    def send_cv_request(self, call: CallbackQuery, user: User):
         text = "Надсилай сюди резюме — PDF не більше 5МБ."
         photo = "https://i.ibb.co/x7mxtk5/bot-06.png"
 

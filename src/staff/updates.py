@@ -4,7 +4,7 @@ from time import sleep
 
 from telebot.types import Message
 
-from ..data import User, Company, Vacancy
+from ..data import User, Company, Vacancy, JobFair
 from src.staff import utils
 
 
@@ -61,6 +61,8 @@ class Updater:
 
         # add user if it does not exist
         if len(user) == 0:
+            ejf = JobFair.objects.first()
+
             username = (
                 message.chat.username
                 if message.chat.username is not None
@@ -85,6 +87,9 @@ class Updater:
                 name=name,
                 surname=surname,
                 username=username,
+                interests=ejf.filters_interest,
+                experience=ejf.filters_experience,
+                employment=ejf.filters_employment,
                 register_source=register_source,
                 registration_date=date,
                 last_update_date=date,
