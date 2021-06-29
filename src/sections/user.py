@@ -363,7 +363,7 @@ class UserSection(Section):
         # CV button
         cv_but = InlineKeyboardButton(
             text="Резюме",
-            callback_data=self.form_user_callback(action="CV", edit=True),
+            callback_data=self.form_user_callback(action="CV", new=True),
         )
 
         criteria_markup.add(interest_but)
